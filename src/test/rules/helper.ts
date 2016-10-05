@@ -4,6 +4,7 @@ import * as Lint from 'tslint/lib/lint';
 
 export interface IScriptError {
   message: string;
+  line?: number;
 }
 export interface IScript {
   code: string;
@@ -70,8 +71,15 @@ export function runScript(rule: string, scriptText: string, config: Object, erro
     `;
     assert.fail(failures.length, errors.length, msg);
   } else {
-    const expectedErrorMsgs = errors.map(x => `- ${x.message}\n`).join('       ');
-    const actualErrorMsgs = failures.map(x => `- ${x.failure}\n`).join('       ');
+    const line = errors[0] ? 'line' in errors[0] : false;
+    const expectedErrorMsgs = errors.map((x) => {
+      const start = line ? `(${x.line})` : '-';
+      return `${start} ${x.message}\n`;
+    }).join('       ');
+    const actualErrorMsgs = failures.map((x) => {
+      const start = line ? `(${x.startPosition.line})` : '-';
+      return `${start} ${x.failure}\n`;
+    }).join('       ');
     const msg = `Error mismatch in:
 
      -------

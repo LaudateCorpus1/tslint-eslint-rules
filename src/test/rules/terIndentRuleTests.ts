@@ -1,5 +1,20 @@
 /// <reference path='../../../typings/mocha/mocha.d.ts' />
-import { runTest, IScripts } from './helper';
+import * as Lint from 'tslint/lib/lint';
+import { runTest, IScripts, IScriptError } from './helper';
+
+function expectedErrors(errors: number[][], indentType: string = 'space'): IScriptError[] {
+  return errors.map(function(err) {
+    let message;
+
+    if (typeof err[1] === 'string' && typeof err[2] === 'string') {
+      message = `Expected indentation of ${err[1]} but found ${err[2]}.`;
+    } else {
+      const chars = indentType + (err[1] === 1 ? '' : 's');
+      message = `Expected indentation of ${err[1]} ${chars} but found ${err[2]}.`;
+    }
+    return { message, line: err[0] };
+  });
+}
 
 /**
  * Borrowing tests from eslint:
@@ -8,32 +23,51 @@ import { runTest, IScripts } from './helper';
 const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
-    {
-     code: `
-if (true) {
-  a = 4; 
-} else {
-  b = 3; 
-}
-`,
-      options: [{ exceptions: { PropertyAssignment: false } }]
-    }
   ],
   invalid: [
     {
-      code: 'function foo(a,  b) {}',
+      code: Lint.Utils.dedent`
+        var a = b;
+        if (a) {
+        b();
+        }`,
+      options: [2],
+      errors: expectedErrors([[3, 2, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if (array.some(function(){
+          return true;
+        })) {
+        a++; // ->
+          b++;
+            c++; // <-
+        }`,
+      options: [2],
+      errors: expectedErrors([[4, 2, 0], [6, 2, 4]])
+    },
+    {
+      code: 'if (a){\n\tb=c;\n\t\tc=d;\ne=f;\n}',
+      options: ['tab'],
+      errors: expectedErrors(
+        [
+          [2, 1, 2],
+          [3, 1, 0]
+        ],
+        'tab'
+      )
     }
   ]
 };
 
 describe(rule, () => {
 
-  it('should pass when avoiding unnecessary spaces', () => {
+  it('should pass when using the correct indentation', () => {
     runTest(rule, scripts.valid);
   });
 
-  it('should fail when using multiple spaces', () => {
-    //runTest(rule, scripts.invalid);
+  it('should fail when using wrong indentation', () => {
+    runTest(rule, scripts.invalid);
   });
 
 });

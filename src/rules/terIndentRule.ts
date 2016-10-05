@@ -9,9 +9,73 @@ let indentType = 'space';
 let indentSize = 2;
 
 export class Rule extends Lint.Rules.AbstractRule {
+
+  public static metadata: Lint.IRuleMetadata = {
+    ruleName: 'ter-indent',
+    description: 'enforce consistent indentation',
+    rationale: Lint.Utils.dedent`
+      Using only one of tabs or spaces for indentation leads to more consistent editor behavior,
+      cleaner diffs in version control, and easier programatic manipulation.`,
+    optionsDescription: Lint.Utils.dedent`
+      The string 'tab' or an integer indicating the number of spaces to use per tab.
+
+      An object may be provided to fine tune the indentation rules:
+            
+        * \`"${DEFAULT_VARIABLE_INDENT.toString()}"\` desc.
+        * \`"${DEFAULT_PARAMETER_INDENT}"\` desc`,
+    options: {
+      type: 'array',
+      items: [{
+        type: 'number',
+        minimum: '0'
+      }, {
+        type: 'string',
+        enum: ['tab']
+      }, {
+        type: 'object',
+        properties: {
+          // [OPTION_IGNORE_URLS]: {
+          //   type: "string",
+          //   enum: [OPTION_ALWAYS, OPTION_NEVER],
+          // },
+          // [OPTION_IGNORE_COMMENTS]: {
+          //   type: "string",
+          //   enum: [OPTION_ALWAYS, OPTION_NEVER],
+          // },
+          // [OPTION_IGNORE_IMPORTS]: {
+          //   type: "string",
+          //   enum: [OPTION_ALWAYS, OPTION_NEVER],
+          // },
+          // [OPTION_IGNORE_PATTERN]: {
+          //   type: "string",
+          // },
+          // [OPTION_CODE]: {
+          //   type: "number",
+          //   minumum: "1",
+          // },
+        },
+        additionalProperties: false,
+      }],
+      minLength: 1,
+      maxLength: 2
+    },
+    optionExamples: [
+    ],
+    type: 'maintainability',
+  };
+
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
     const walker = new IndentWalker(sourceFile, this.getOptions());
-    const options = {
+    return this.applyWithWalker(walker);
+  }
+}
+
+class IndentWalker extends Lint.RuleWalker {
+  private srcText: string;
+
+  constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
+    super(sourceFile, options);
+    const defaultOptions = {
       SwitchCase: 0,
       VariableDeclarator: {
         var: DEFAULT_VARIABLE_INDENT,
@@ -28,16 +92,14 @@ export class Rule extends Lint.Rules.AbstractRule {
         body: DEFAULT_FUNCTION_BODY_INDENT
       }
     };
-    // console.log('options', this.getOptions());
-    return this.applyWithWalker(walker);
-  }
-}
-
-class IndentWalker extends Lint.RuleWalker {
-  private srcText: string;
-
-  constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
-    super(sourceFile, options);
+    const firstParam = this.getOptions()[0];
+    if (firstParam === 'tab') {
+      indentSize = 1;
+      indentType = 'tab';
+    } else {
+      indentSize = firstParam;
+      indentType = 'space';
+    }
     this.srcText = sourceFile.getFullText();
   }
 
@@ -75,13 +137,10 @@ class IndentWalker extends Lint.RuleWalker {
 
   /**
    * Reports a given indent violation
-   * @param {ASTNode} node Node violating the indent rule
-   * @param {int} needed Expected indentation character count
-   * @param {int} gottenSpaces Indentation space count in the actual node/code
-   * @param {int} gottenTabs Indentation tab count in the actual node/code
-   * @param {Object=} loc Error line and column location
-   * @param {boolean} isLastNodeCheck Is the error for last node check
-   * @returns {void}
+   * node: Node violating the indent rule
+   * needed: Expected indentation character count
+   * gottenSpaces: Indentation space count in the actual node/code
+   * gottenTabs: Indentation tab count in the actual node/code
    */
   private report(node: ts.Node, needed, gottenSpaces, gottenTabs) {
     const msg = this.createErrorMessage(needed, gottenSpaces, gottenTabs);
@@ -104,30 +163,21 @@ class IndentWalker extends Lint.RuleWalker {
     return this.srcText.charAt(pos) === '\n';
   }
 
-  // private getNodeLocation(node: ts.Node, byEndLocation: boolean = false) {
-  //   const index = byEndLocation ? node.getEnd() : node.getStart();
-  //   return node.getSourceFile().getLineAndCharacterOfPosition(index);
-  // }
-
   /**
    * Get the actual indent of node
    * node: Node to examine
-   * [byLastLine=false]: get indent of node's last line
-   * [excludeCommas=false]: skip comma on start of line
    *
    * Returns the node's indent. Contains keys `space` and `tab`, representing the indent of each
    * character. Also contains keys `goodChar` and `badChar`, where `goodChar` is the amount of the
    * user's desired indentation character, and `badChar` is the amount of the other indentation
    * character.
    */
-  private getNodeIndent(node: ts.Node, byLastLine: boolean = false) {
-    console.log('doing it here:', [node.getFullText()]);
+  private getNodeIndent(node: ts.Node) {
     if (node === this.getSourceFile()) {
       return { space: 0, tab: 0, goodChar: 0, badChar: 0 };
     }
     if (node.kind === ts.SyntaxKind.SyntaxList) {
-      console.log('Are you serious?');
-      return this.getNodeIndent(node.parent, byLastLine);
+      return this.getNodeIndent(node.parent);
     }
 
     const endIndex = node.getStart();
@@ -136,45 +186,34 @@ class IndentWalker extends Lint.RuleWalker {
       pos -= 1;
     }
     const str = this.getSourceSubstr(pos + 1, endIndex);
-    console.log('here:'.blue, [str], [node.getFullText()]);
-
     const whiteSpace = (str.match(/^\s+/) || [''])[0];
     const indentChars = whiteSpace.split('');
     const spaces = indentChars.filter(char => char === ' ').length;
     const tabs = indentChars.filter(char => char === '\t').length;
 
-    const r = {
+    return {
       firstInLine: spaces + tabs === str.length,
       space: spaces,
       tab: tabs,
       goodChar: indentType === 'space' ? spaces : tabs,
       badChar: indentType === 'space' ? tabs : spaces
     };
-    console.log('RETURN'.green, r, [node.getText()]);
-    return r;
   }
 
   private checkNodeIndent(node: ts.Node, neededIndent: number) {
-    console.log('getting the indent:', [node.getFullText()]);
-    const actualIndent = this.getNodeIndent(node, false);
+    const actualIndent = this.getNodeIndent(node);
     if (
       node.kind !== ts.SyntaxKind.ArrayLiteralExpression &&
       node.kind !== ts.SyntaxKind.ObjectLiteralExpression &&
       (actualIndent.goodChar !== neededIndent || actualIndent.badChar !== 0) &&
       actualIndent.firstInLine
     ) {
-      console.log('bad node: '.red, [node.getFullText(), neededIndent]);
       this.report(node, neededIndent, actualIndent.space, actualIndent.tab);
     }
 
-    if (node.type === 'IfStatement' && node.alternate) {
-      const elseToken = sourceCode.getTokenBefore(node.alternate);
-
-      checkNodeIndent(elseToken, neededIndent);
-
-      if (!isNodeFirstInLine(node.alternate)) {
-        checkNodeIndent(node.alternate, neededIndent);
-      }
+    if (node.kind === ts.SyntaxKind.IfStatement && node['elseStatement']) {
+      const elseKeyword = node.getChildren().filter(ch => ch.kind === ts.SyntaxKind.ElseKeyword).shift();
+      this.checkNodeIndent(elseKeyword, neededIndent);
     }
   }
 
@@ -187,7 +226,7 @@ class IndentWalker extends Lint.RuleWalker {
    * @param {ASTNode} node node to check
    * @returns {void}
    */
-  private blockIndentationCheck(node: ts.BlockLike) {
+  private blockIndentationCheck(node: ts.Node) {
 
     // Skip inline blocks
     if (this.isSingleLineNode(node)) {
@@ -223,22 +262,22 @@ class IndentWalker extends Lint.RuleWalker {
 console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]]);
     if (node.parent && statementsWithProperties.indexOf(node.parent.kind) !== -1 && this.isNodeBodyBlock(node)) {
       indent = this.getNodeIndent(node.parent).goodChar;
-    } else {
+    }
+    else {
       indent = this.getNodeIndent(node).goodChar;
     }
 
 
 
-    // if (node.type === 'IfStatement' && node.consequent.type !== 'BlockStatement') {
-    //   nodesToCheck = [node.consequent];
-    // } else if (Array.isArray(node.body)) {
-    //   nodesToCheck = node.body;
-    // } else {
-    //   nodesToCheck = [node.body];
-    // }
+    if (node.kind === ts.SyntaxKind.IfStatement && node['thenStatement'].kind !== ts.SyntaxKind.Block) {
+      console.log('MADE IT HERE...');
+      nodesToCheck = [node['thenStatement']];
+    } else {
+      nodesToCheck = node.getChildren()[1].getChildren();
+    }
     this.checkNodeIndent(node, indent);
 
-    nodesToCheck = node.getChildren()[1].getChildren();
+
 
     if (nodesToCheck.length > 0) {
       console.log('Checking children with indent', [indent]);
@@ -385,6 +424,15 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
   protected visitBlock(node: ts.Block) {
     this.blockIndentationCheck(node);
     super.visitBlock(node);
+  }
+
+  protected visitIfStatement(node: ts.IfStatement) {
+    const thenLine = node.getSourceFile().getLineAndCharacterOfPosition(node.thenStatement.getStart()).line;
+    const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
+    if (node.thenStatement.kind !== ts.SyntaxKind.Block && thenLine > line) {
+      this.blockIndentationCheck(node);
+    }
+    super.visitIfStatement(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {
