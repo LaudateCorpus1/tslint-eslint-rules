@@ -47,16 +47,37 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([[4, 2, 0], [6, 2, 4]])
     },
     {
-      code: 'if (a){\n\tb=c;\n\t\tc=d;\ne=f;\n}',
+      code: '\nif (a){\n\tb=c;\n\t\tc=d;\ne=f;\n}',
       options: ['tab'],
       errors: expectedErrors(
         [
-          [2, 1, 2],
-          [3, 1, 0]
+          [3, 1, 2],
+          [4, 1, 0]
         ],
         'tab'
       )
-    }
+    },
+    {
+      code: '\nif (a){\n    b=c;\n      c=d;\n e=f;\n}',
+      options: [4],
+      errors: expectedErrors([[3, 4, 6], [4, 4, 1]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch(value){
+            case \"1\":
+                a();
+            break;
+            case \"2\":
+                a();
+            break;
+            default:
+                a();
+                break;
+        }`,
+      options: [4, { SwitchCase: 1 }],
+      errors: expectedErrors([[4, 8, 4], [7, 8, 4]])
+    },
   ]
 };
 
