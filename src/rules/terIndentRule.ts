@@ -7,9 +7,9 @@ const DEFAULT_PARAMETER_INDENT = null;
 const DEFAULT_FUNCTION_BODY_INDENT = 1;
 let indentType = 'space';
 let indentSize = 2;
+const OPTIONS: any = {};
 
 export class Rule extends Lint.Rules.AbstractRule {
-
   public static metadata: Lint.IRuleMetadata = {
     ruleName: 'ter-indent',
     description: 'enforce consistent indentation',
@@ -34,6 +34,10 @@ export class Rule extends Lint.Rules.AbstractRule {
       }, {
         type: 'object',
         properties: {
+          SwitchCase: {
+            type: 'number',
+            minimum: 0
+          }
           // [OPTION_IGNORE_URLS]: {
           //   type: "string",
           //   enum: [OPTION_ALWAYS, OPTION_NEVER],
@@ -72,6 +76,7 @@ export class Rule extends Lint.Rules.AbstractRule {
 
 class IndentWalker extends Lint.RuleWalker {
   private srcText: string;
+  private caseIndentStore: { [key:number]: number } = {};
 
   constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
     super(sourceFile, options);
@@ -100,6 +105,7 @@ class IndentWalker extends Lint.RuleWalker {
       indentSize = firstParam;
       indentType = 'space';
     }
+    Object.assign(OPTIONS, defaultOptions, this.getOptions()[1]);
     this.srcText = sourceFile.getFullText();
   }
 
@@ -412,8 +418,32 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
   protected checkNodesIndent(nodes: ts.Node[], indent: number) {
     nodes.forEach(node => {
       console.log('checking node in loop:', [node.getFullText(), indent]);
-      this.checkNodeIndent(node, indent)
+      this.checkNodeIndent(node, indent);
     });
+  }
+
+  /**
+   * Returns the expected indentation for the case statement
+   * @param {ASTNode} node node to examine
+   * @param {int} [switchIndent] indent for switch statement
+   * @returns {int} indent size
+   */
+  private expectedCaseIndent(node: ts.Node, switchIndent?: number) {
+    const switchNode = (node.kind === ts.SyntaxKind.CaseBlock) ? node.parent : node.parent.parent;
+    const line = node.getSourceFile().getLineAndCharacterOfPosition(switchNode.getStart()).line;
+    let caseIndent;
+
+    if (this.caseIndentStore[line]) {
+      return this.caseIndentStore[line];
+    } else {
+      if (typeof switchIndent === 'undefined') {
+        switchIndent = this.getNodeIndent(switchNode).goodChar;
+      }
+
+      caseIndent = switchIndent + (indentSize * OPTIONS.SwitchCase);
+      this.caseIndentStore[line] = caseIndent;
+      return caseIndent;
+    }
   }
 
   protected visitBinaryExpression(node: ts.BinaryExpression) {
@@ -433,6 +463,20 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
       this.blockIndentationCheck(node);
     }
     super.visitIfStatement(node);
+  }
+
+  protected visitSwitchStatement(node: ts.SwitchStatement) {
+    super.visitSwitchStatement(node);
+  }
+
+  protected visitCaseClause(node: ts.CaseClause) {
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+    const caseIndent = this.expectedCaseIndent(node);
+    this.checkNodesIndent(node.statements, caseIndent + indentSize);
+
+    super.visitCaseClause(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {
