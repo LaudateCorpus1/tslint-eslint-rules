@@ -78,6 +78,16 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       options: [4, { SwitchCase: 1 }],
       errors: expectedErrors([[4, 8, 4], [7, 8, 4]])
     },
+    {
+      code: Lint.Utils.dedent`
+        var x = 0 &&
+            {
+               a: 1,
+                  b: 2
+            };`,
+      options: [4],
+      errors: expectedErrors([[3, 8, 7], [4, 8, 10]])
+    }
   ]
 };
 

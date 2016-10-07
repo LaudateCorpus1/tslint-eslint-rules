@@ -263,9 +263,8 @@ class IndentWalker extends Lint.RuleWalker {
       ts.SyntaxKind.ForOfStatement,
       ts.SyntaxKind.DoStatement,
       ts.SyntaxKind.ClassDeclaration,
-      ts.SyntaxKind.SourceFile,
+      ts.SyntaxKind.SourceFile
     ];
-console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]]);
     if (node.parent && statementsWithProperties.indexOf(node.parent.kind) !== -1 && this.isNodeBodyBlock(node)) {
       indent = this.getNodeIndent(node.parent).goodChar;
     }
@@ -306,6 +305,25 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
         node.kind === ts.SyntaxKind.ClassExpression;
     // return node.type === "BlockStatement" || node.type === "ClassBody" || (node.body && node.body.type === "BlockStatement") ||
     //   (node.consequent && node.consequent.type === "BlockStatement");
+  }
+
+  /**
+   * Check last node line indent this detects, that block closed correctly
+   * @param {ASTNode} node Node to examine
+   * @param {int} lastLineIndent needed indent
+   * @returns {void}
+   */
+  private checkFirstNodeLineIndent(node, firstLineIndent) {
+    const startIndent = this.getNodeIndent(node, false);
+    const firstInLine = startIndent.firstInLine;
+    if (firstInLine && (startIndent.goodChar !== firstLineIndent || startIndent.badChar !== 0)) {
+      this.report(
+        node,
+        firstLineIndent,
+        startIndent.space,
+        startIndent.tab
+      );
+    }
   }
 
   /**
@@ -398,7 +416,7 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
     const parentVarNode = getVariableDeclaratorNode(node);
 
     if (parentVarNode && isNodeInVarOnTop(node, parentVarNode)) {
-      indent += indentSize * options.VariableDeclarator[parentVarNode.parent.kind];
+      indent += indentSize * OPTIONS.VariableDeclarator[parentVarNode.parent.kind];
     }
 
     if (node.body.length > 0) {
@@ -446,6 +464,152 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
     }
   }
 
+  /**
+   * Returns a parent node of given node based on a specified type
+   * if not present then return null
+   * @param {ASTNode} node node to examine
+   * @param {string} type type that is being looked for
+   * @returns {ASTNode|void} if found then node otherwise null
+   */
+  protected getParentNodeByType(node: ts.Node, kind) {
+    let parent = node.parent;
+
+    while (parent.kind !== kind && parent.kind !== ts.SyntaxKind.SourceFile) {
+      parent = parent.parent;
+    }
+
+    return parent.kind === kind ? parent : null;
+  }
+
+  /**
+   * Returns the VariableDeclarator based on the current node
+   * if not present then return null
+   * @param {ASTNode} node node to examine
+   * @returns {ASTNode|void} if found then node otherwise null
+   */
+  protected getVariableDeclaratorNode(node: ts.Node) {
+    return this.getParentNodeByType(node, ts.SyntaxKind.VariableDeclaration);
+  }
+
+  /**
+   * Check indent for array block content or object block content
+   * @param {ASTNode} node node to examine
+   * @returns {void}
+   */
+  protected checkIndentInArrayOrObjectBlock(node: ts.Node) {
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+
+    let elements = (node.kind === ts.SyntaxKind.ObjectLiteralExpression) ? node['properties'] : node['elements'];
+
+    // filter out empty elements example would be [ , 2] so remove first element as espree considers it as null
+    elements = elements.filter((elem) => {
+      return elem !== null;
+    });
+
+    const file = node.getSourceFile();
+    const nodeLine = file.getLineAndCharacterOfPosition(node.getStart()).line;
+    const nodeEndLine = file.getLineAndCharacterOfPosition(node.getEnd()).line;
+    console.log('===>', elements);
+
+    // Skip if first element is in same line with this node
+    if (elements.length) {
+      const firstElementLine = file.getLineAndCharacterOfPosition(elements[0].getStart()).line;
+      if (nodeLine === firstElementLine) {
+        return;
+      }
+    }
+
+    let nodeIndent;
+    let elementsIndent;
+    const parentVarNode = this.getVariableDeclaratorNode(node);
+
+    if (this.isNodeFirstInLine(node)) {
+      const parent = node.parent;
+      let effectiveParent = parent;
+
+      if (parent.kind === ts.SyntaxKind.PropertyDeclaration) {
+        if (this.isNodeFirstInLine(parent)) {
+          effectiveParent = parent.parent.parent;
+        } else {
+          effectiveParent = parent.parent;
+        }
+      }
+      console.log('effectiveParent:', [ts.SyntaxKind[effectiveParent.kind] effectiveParent.getText()]);
+
+      nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
+      const parentVarNodeLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
+      if (parentVarNode && parentVarNodeLine !== nodeLine) {
+        console.log('1');
+        if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
+          console.log('2');
+          if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarNode.loc.start.line === effectiveParent.loc.start.line) {
+            console.log('3');
+            nodeIndent = nodeIndent + (indentSize * options.VariableDeclarator[parentVarNode.parent.kind]);
+          } else if (
+            parent.kind === ts.SyntaxKind.ObjectLiteralExpression ||
+            parent.kind === ts.SyntaxKind.ArrayLiteralExpression ||
+            parent.kind === ts.SyntaxKind.CallExpression ||
+            parent.kind === ts.SyntaxKind.ArrowFunction ||
+            parent.kind === ts.SyntaxKind.NewExpression ||
+            parent.kind === ts.SyntaxKind.BinaryExpression
+          ) {
+            console.log('4');
+            nodeIndent = nodeIndent + indentSize;
+          }
+        }
+      } else if (!parentVarNode && !isFirstArrayElementOnSameLine(parent) && effectiveParent.type !== "MemberExpression" && effectiveParent.type !== "ExpressionStatement" && effectiveParent.type !== "AssignmentExpression" && effectiveParent.type !== "Property") {
+        console.log('5');
+        nodeIndent = nodeIndent + indentSize;
+      }
+
+      elementsIndent = nodeIndent + indentSize;
+console.log('checking first node indent');
+      this.checkFirstNodeLineIndent(node, nodeIndent);
+    } else {
+      console.log('Nope...'.red);
+      nodeIndent = this.getNodeIndent(node).goodChar;
+      elementsIndent = nodeIndent + indentSize;
+    }
+
+    /*
+       * Check if the node is a multiple variable declaration; if so, then
+       * make sure indentation takes that into account.
+       */
+    if (this.isNodeInVarOnTop(node, parentVarNode)) {
+      elementsIndent += indentSize * options.VariableDeclarator[parentVarNode.parent.kind];
+    }
+
+    this.checkNodesIndent(elements, elementsIndent);
+
+    if (elements.length > 0) {
+      const lastLine = file.getLineAndCharacterOfPosition(elements[elements.length - 1].getEnd()).line;
+      // Skip last block line check if last item in same line
+      if (lastLine === nodeEndLine) {
+        return;
+      }
+    }
+
+    this.checkLastNodeLineIndent(node, elementsIndent - indentSize);
+  }
+
+  /**
+   * Check to see if the node is part of the multi-line variable declaration.
+   * Also if its on the same line as the varNode
+   * @param {ASTNode} node node to check
+   * @param {ASTNode} varNode variable declaration node to check against
+   * @returns {boolean} True if all the above condition satisfy
+   */
+  protected isNodeInVarOnTop(node: ts.Node, varNode) {
+    const file = node.getSourceFile();
+    const nodeLine = file.getLineAndCharacterOfPosition(node.getStart()).line;
+    const parentLine = file.getLineAndCharacterOfPosition(varNode.parent.getStart()).line;
+    return varNode &&
+      parentLine === nodeLine &&
+      varNode.parent.declarations.length > 1;
+  }
+
   protected visitBinaryExpression(node: ts.BinaryExpression) {
     // this.validateUseIsnan(node);
     super.visitBinaryExpression(node);
@@ -457,12 +621,18 @@ console.log('checking block...', [node.getFullText(), ts.SyntaxKind[node.kind]])
   }
 
   protected visitIfStatement(node: ts.IfStatement) {
-    const thenLine = node.getSourceFile().getLineAndCharacterOfPosition(node.thenStatement.getStart()).line;
-    const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
+    const file = node.getSourceFile();
+    const thenLine = file.getLineAndCharacterOfPosition(node.thenStatement.getStart()).line;
+    const line = file.getLineAndCharacterOfPosition(node.getStart()).line;
     if (node.thenStatement.kind !== ts.SyntaxKind.Block && thenLine > line) {
       this.blockIndentationCheck(node);
     }
     super.visitIfStatement(node);
+  }
+
+  protected visitObjectLiteralExpression(node: ts.ObjectLiteralExpression) {
+    this.checkIndentInArrayOrObjectBlock(node);
+    super.visitObjectLiteralExpression(node);
   }
 
   protected visitSwitchStatement(node: ts.SwitchStatement) {
