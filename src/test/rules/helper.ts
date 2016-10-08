@@ -13,6 +13,10 @@ export interface IScript {
 }
 export type IScripts = (IScript|string)[];
 
+function arrayDiff(source, target) {
+  return source.filter(item => target.indexOf(item) === -1);
+}
+
 export function testScript(rule: string, scriptText: string, config: Object): boolean {
   const options: Lint.ILinterOptions = {
     configuration: config,
@@ -75,11 +79,13 @@ export function runScript(rule: string, scriptText: string, config: Object, erro
     const expectedErrorMsgs = errors.map((x) => {
       const start = line ? `(${x.line})` : '-';
       return `${start} ${x.message}\n`;
-    }).join('       ');
+    });
     const actualErrorMsgs = failures.map((x) => {
       const start = line ? `(${x.startPosition.line})` : '-';
       return `${start} ${x.failure}\n`;
-    }).join('       ');
+    });
+    const expected = arrayDiff(expectedErrorMsgs, actualErrorMsgs);
+    const found = arrayDiff(actualErrorMsgs, expectedErrorMsgs);
     const msg = `Error mismatch in:
 
      -------
@@ -88,13 +94,13 @@ export function runScript(rule: string, scriptText: string, config: Object, erro
      
      Expected:
      
-       ${expectedErrorMsgs}
+       ${expected.join('       ')}
      
      Found:
 
-       ${actualErrorMsgs}
+       ${found.join('       ')}
     `;
-    assert(actualErrorMsgs === expectedErrorMsgs, msg);
+    assert(expected.length === 0 && found.length === 0, msg);
   }
 }
 

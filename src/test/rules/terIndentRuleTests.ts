@@ -65,10 +65,10 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
     {
       code: Lint.Utils.dedent`
         switch(value){
-            case \"1\":
+            case "1":
                 a();
             break;
-            case \"2\":
+            case "2":
                 a();
             break;
             default:
@@ -87,6 +87,73 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             };`,
       options: [4],
       errors: expectedErrors([[3, 8, 7], [4, 8, 10]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch(value){
+            case "1":
+                a();
+                break;
+            case "2":
+                a();
+                break;
+            default:
+            break;
+        }`,
+      options: [4, {SwitchCase: 1}],
+      errors: expectedErrors([[9, 8, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch(value){
+            case "1":
+            case "2":
+                a();
+                break;
+            default:
+                break;
+        }
+        switch(value){
+            case "1":
+            break;
+            case "2":
+                a();
+            break;
+            default:
+                a();
+            break;
+        }`,
+      options: [4, { SwitchCase: 1 }],
+      errors: expectedErrors([[11, 8, 4], [14, 8, 4], [17, 8, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch(value){
+        case "1":
+                a();
+                break;
+            case "2":
+                break;
+            default:
+                break;
+        }`,
+      options: [4],
+      errors: expectedErrors([
+        [3, 4, 8],
+        [4, 4, 8],
+        [5, 0, 4],
+        [6, 4, 8],
+        [7, 0, 4],
+        [8, 4, 8]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var obj = {foo: 1, bar: 2};
+        with (obj) {
+        console.log(foo + bar);
+        }`,
+      errors: expectedErrors([[3, 4, 0]])
     }
   ]
 };

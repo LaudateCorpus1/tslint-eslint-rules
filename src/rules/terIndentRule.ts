@@ -6,7 +6,7 @@ const DEFAULT_VARIABLE_INDENT = 1;
 const DEFAULT_PARAMETER_INDENT = null;
 const DEFAULT_FUNCTION_BODY_INDENT = 1;
 let indentType = 'space';
-let indentSize = 2;
+let indentSize = 4;
 const OPTIONS: any = {};
 
 export class Rule extends Lint.Rules.AbstractRule {
@@ -102,7 +102,7 @@ class IndentWalker extends Lint.RuleWalker {
       indentSize = 1;
       indentType = 'tab';
     } else {
-      indentSize = firstParam;
+      indentSize = firstParam || indentSize;
       indentType = 'space';
     }
     Object.assign(OPTIONS, defaultOptions, this.getOptions()[1]);
@@ -447,7 +447,7 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {int} indent size
    */
   private expectedCaseIndent(node: ts.Node, switchIndent?: number) {
-    const switchNode = (node.kind === ts.SyntaxKind.CaseBlock) ? node.parent : node.parent.parent;
+    const switchNode = (node.kind === ts.SyntaxKind.SwitchStatement) ? node : node.parent;
     const line = node.getSourceFile().getLineAndCharacterOfPosition(switchNode.getStart()).line;
     let caseIndent;
 
@@ -636,17 +636,29 @@ console.log('checking first node indent');
   }
 
   protected visitSwitchStatement(node: ts.SwitchStatement) {
+    const switchIndent = this.getNodeIndent(node).goodChar;
+    const caseIndent = this.expectedCaseIndent(node, switchIndent);
     super.visitSwitchStatement(node);
+    this.checkNodesIndent(node.caseBlock.clauses, caseIndent);
+    this.checkLastNodeLineIndent(node, switchIndent);
   }
 
-  protected visitCaseClause(node: ts.CaseClause) {
+  private visitCase(node: ts.Node) {
     if (this.isSingleLineNode(node)) {
       return;
     }
     const caseIndent = this.expectedCaseIndent(node);
     this.checkNodesIndent(node.statements, caseIndent + indentSize);
+  }
 
+  protected visitCaseClause(node: ts.CaseClause) {
+    this.visitCase(node);
     super.visitCaseClause(node);
+  }
+
+  protected visitDefaultClause(node: ts.DefaultClause) {
+    this.visitCase(node);
+    super.visitDefaultClause(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {
