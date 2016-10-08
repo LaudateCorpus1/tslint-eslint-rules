@@ -421,7 +421,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         [2, 2, 4],
         [3, 2, 4]
       ])
-    },*/
+    },
     {
       code: Lint.Utils.dedent`
         var a = new Test({
@@ -432,6 +432,65 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([
         [2, 8, 6],
         [3, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var a = new Test({
+              a: 1
+            }),
+            b = 4;
+        const a = new Test({
+              a: 1
+            }),
+            b = 4;`,
+      options: [2, { VariableDeclarator: { var: 2 } }],
+      errors: expectedErrors([
+        [6, 4, 6],
+        [7, 2, 4],
+        [8, 2, 4]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var abc = 5,
+            c = 2,
+            xyz =
+             {
+               a: 1,
+                b: 2
+             };`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [4, 4, 5],
+        [5, 6, 7],
+        [6, 6, 8],
+        [7, 4, 5]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var abc =
+             {
+               a: 1,
+                b: 2
+             };`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 4, 5],
+        [3, 6, 7],
+        [4, 6, 8],
+        [5, 4, 5]
+      ])
+    }, */
+    {
+      code: Lint.Utils.dedent`
+        var path     = require('path')
+         , crypto    = require('crypto')
+        ;`,
+      options: [2],
+      errors: expectedErrors([
+        [3, 1, 0]
       ])
     },
   ]

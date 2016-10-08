@@ -81,7 +81,7 @@ class IndentWalker extends Lint.RuleWalker {
 
   constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
     super(sourceFile, options);
-    const defaultOptions = {
+    OPTIONS = {
       SwitchCase: 0,
       VariableDeclarator: {
         var: DEFAULT_VARIABLE_INDENT,
@@ -107,14 +107,35 @@ class IndentWalker extends Lint.RuleWalker {
       indentType = 'space';
     }
     const userOptions = this.getOptions()[1];
-    if (userOptions && typeof userOptions.VariableDeclarator === 'number') {
-      userOptions.VariableDeclarator =  {
-        var: userOptions.VariableDeclarator,
-        let: userOptions.VariableDeclarator,
-        const: userOptions.VariableDeclarator
-      };
+    if (userOptions) {
+      OPTIONS.SwitchCase = userOptions.SwitchCase || 0;
+
+      if (typeof userOptions.VariableDeclarator === 'number') {
+        OPTIONS.VariableDeclarator = {
+          var: userOptions.VariableDeclarator,
+          let: userOptions.VariableDeclarator,
+          const: userOptions.VariableDeclarator
+        };
+      } else if (typeof userOptions.VariableDeclarator === 'object') {
+        Object.assign(OPTIONS.VariableDeclarator, userOptions.VariableDeclarator);
+      }
+
+      if (typeof userOptions.outerIIFEBody === 'number') {
+        OPTIONS.outerIIFEBody = userOptions.outerIIFEBody;
+      }
+
+      if (typeof userOptions.MemberExpression === 'number') {
+        OPTIONS.MemberExpression = userOptions.MemberExpression;
+      }
+
+      if (typeof userOptions.FunctionDeclaration === 'object') {
+        Object.assign(OPTIONS.FunctionDeclaration, userOptions.FunctionDeclaration);
+      }
+
+      if (typeof userOptions.FunctionExpression === 'object') {
+        Object.assign(OPTIONS.FunctionExpression, userOptions.FunctionExpression);
+      }
     }
-    Object.assign(OPTIONS, defaultOptions, this.getOptions()[1]);
     this.srcText = sourceFile.getFullText();
   }
 
@@ -561,6 +582,7 @@ console.log('INDENT:', indent);
 
     let nodeIndent;
     let elementsIndent;
+    let varKind;
     const parentVarNode = this.getVariableDeclaratorNode(node);
 
     if (this.isNodeFirstInLine(node)) {
@@ -582,9 +604,12 @@ console.log('INDENT:', indent);
         console.log('1');
         if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
           console.log('2');
-          if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarNode.loc.start.line === effectiveParent.loc.start.line) {
+          const parentVarLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
+          const effectiveParentLine = file.getLineAndCharacterOfPosition(effectiveParent.getStart()).line;
+          if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarLine === effectiveParentLine) {
             console.log('3');
-            nodeIndent = nodeIndent + (indentSize * options.VariableDeclarator[parentVarNode.parent.kind]);
+            varKind = parentVarNode.parent.getFirstToken().getText();
+            nodeIndent = nodeIndent + (indentSize * OPTIONS.VariableDeclarator[varKind]);
           } else if (
             parent.kind === ts.SyntaxKind.ObjectLiteralExpression ||
             parent.kind === ts.SyntaxKind.ArrayLiteralExpression ||
@@ -616,7 +641,7 @@ console.log('checking first node indent');
        * make sure indentation takes that into account.
        */
     if (this.isNodeInVarOnTop(node, parentVarNode)) {
-      const varKind = parentVarNode.parent.getFirstToken().getText();
+      varKind = parentVarNode.parent.getFirstToken().getText();
       console.log('varKind', [varKind]);
       elementsIndent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
