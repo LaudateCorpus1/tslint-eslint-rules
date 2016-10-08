@@ -107,7 +107,7 @@ class IndentWalker extends Lint.RuleWalker {
       indentType = 'space';
     }
     const userOptions = this.getOptions()[1];
-    if (typeof userOptions.VariableDeclarator === 'number') {
+    if (userOptions && typeof userOptions.VariableDeclarator === 'number') {
       userOptions.VariableDeclarator =  {
         var: userOptions.VariableDeclarator,
         let: userOptions.VariableDeclarator,
@@ -574,7 +574,7 @@ console.log('INDENT:', indent);
           effectiveParent = parent.parent;
         }
       }
-      console.log('effectiveParent:', [ts.SyntaxKind[effectiveParent.kind] effectiveParent.getText()]);
+      console.log('effectiveParent:', [ts.SyntaxKind[effectiveParent.kind], effectiveParent.getText()]);
 
       nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
       const parentVarNodeLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
@@ -616,7 +616,9 @@ console.log('checking first node indent');
        * make sure indentation takes that into account.
        */
     if (this.isNodeInVarOnTop(node, parentVarNode)) {
-      elementsIndent += indentSize * options.VariableDeclarator[parentVarNode.parent.kind];
+      const varKind = parentVarNode.parent.getFirstToken().getText();
+      console.log('varKind', [varKind]);
+      elementsIndent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 
     this.checkNodesIndent(elements, elementsIndent);
@@ -686,31 +688,17 @@ console.log('checking first node indent');
     super.visitObjectLiteralExpression(node);
   }
 
+  protected visitArrayLiteralExpression(node: ts.ArrayLiteralExpression) {
+    this.checkIndentInArrayOrObjectBlock(node);
+    super.visitArrayLiteralExpression(node);
+  }
+
   protected visitSwitchStatement(node: ts.SwitchStatement) {
     const switchIndent = this.getNodeIndent(node).goodChar;
     const caseIndent = this.expectedCaseIndent(node, switchIndent);
     this.checkNodesIndent(node.caseBlock.clauses, caseIndent);
     this.checkLastNodeLineIndent(node, switchIndent);
     super.visitSwitchStatement(node);
-  }
-
-  /**
-   * Filter out the elements which are on the same line of each other or the node.
-   * basically have only 1 elements from each line except the variable declaration line.
-   * @param {ASTNode} node Variable declaration node
-   * @returns {ASTNode[]} Filtered elements
-   */
-  private filterOutSameLineVars(node) {
-    return node.declarations.reduce(function(finalCollection, elem) {
-      const lastElem = finalCollection[finalCollection.length - 1];
-
-      if ((elem.loc.start.line !== node.loc.start.line && !lastElem) ||
-        (lastElem && lastElem.loc.start.line !== elem.loc.start.line)) {
-        finalCollection.push(elem);
-      }
-
-      return finalCollection;
-    }, []);
   }
 
   /**

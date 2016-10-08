@@ -397,7 +397,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         [2, 2, 4],
         [3, 2, 4]
       ])
-    }, */
+    },
     {
       code: Lint.Utils.dedent`
         var a = [
@@ -408,6 +408,30 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([
         [2, 2, 4],
         [3, 2, 4]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        let a = [
+            a,
+            b
+        ]`,
+      options: [2, { VariableDeclarator: { let: 2 }, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 2, 4],
+        [3, 2, 4]
+      ])
+    },*/
+    {
+      code: Lint.Utils.dedent`
+        var a = new Test({
+              a: 1
+          }),
+            b = 4;`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 8, 6],
+        [3, 4, 2]
       ])
     },
   ]
