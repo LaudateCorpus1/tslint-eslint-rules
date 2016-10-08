@@ -734,22 +734,6 @@ console.log('checking first node indent');
   private checkIndentInVariableDeclarations(node: ts.VariableDeclaration) {
     const indent = this.expectedVarIndent(node);
     this.checkNodeIndent(node, indent);
-
-/*
-    // Only check the last line if there is any token after the last item
-    if (sourceCode.getLastToken(node).loc.end.line <= lastElement.loc.end.line) {
-      return;
-    }
-
-    const tokenBeforeLastElement = sourceCode.getTokenBefore(lastElement);
-
-    if (tokenBeforeLastElement.value === ",") {
-
-      // Special case for comma-first syntax where the semicolon is indented
-      checkLastNodeLineIndent(node, getNodeIndent(tokenBeforeLastElement).goodChar);
-    } else {
-      checkLastNodeLineIndent(node, elementsIndent - indentSize);
-    }*/
   }
 
 
@@ -788,13 +772,35 @@ console.log('checking first node indent');
     this.blockLessNodes(node);
   }
 
-  protected visitVariableDeclarationList(node: ts.VariableDeclarationList) {
-    console.log('node:', [node]);
-  }
-
   protected visitVariableDeclaration(node: ts.VariableDeclaration) {
     this.checkIndentInVariableDeclarations(node);
     super.visitVariableDeclaration(node);
+  }
+
+  protected visitVariableStatement(node: ts.VariableStatement) {
+    super.visitVariableStatement(node);
+
+    // VariableStatement -> VariableDeclarationList -> (VarKeyword, SyntaxList)
+    const list = node.getChildAt(0).getChildAt(1);
+    const len = list.getChildCount();
+    const lastElement = list.getChildAt(len - 1);
+    const lastToken = node.getLastToken();
+    const file = node.getSourceFile();
+    const lastTokenLine = file.getLineAndCharacterOfPosition(lastToken.getEnd()).line;
+    const lastElementLine = file.getLineAndCharacterOfPosition(lastElement.getEnd()).line;
+
+    // Only check the last line if there is any token after the last item
+    if (lastTokenLine <= lastElementLine) {
+      return;
+    }
+
+    const tokenBeforeLastElement = list.getChildAt(len - 2);
+    if (tokenBeforeLastElement.kind === ts.SyntaxKind.CommaToken) {
+      // Special case for comma-first syntax where the semicolon is indented
+      this.checkLastNodeLineIndent(node, this.getNodeIndent(tokenBeforeLastElement).goodChar);
+    } else {
+      this.checkLastNodeLineIndent(node, elementsIndent - indentSize);
+    }
   }
 
   protected visitSourceFile(node: ts.SourceFile) {

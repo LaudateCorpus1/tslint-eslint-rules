@@ -482,7 +482,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         [4, 6, 8],
         [5, 4, 5]
       ])
-    }, */
+    },
     {
       code: Lint.Utils.dedent`
         var path     = require('path')
@@ -492,6 +492,25 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([
         [3, 1, 0]
       ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var a = 1
+           ,b = 2
+        ;`,
+      errors: expectedErrors([
+        [3, 3, 0]
+      ])
+    }, */
+    {
+      code: Lint.Utils.dedent`
+        class A{
+          constructor(){}
+            a(){}
+            get b(){}
+        }`,
+      options: [4, { VariableDeclarator: 1, SwitchCase: 1 }],
+      errors: expectedErrors([[2, 4, 2]])
     },
   ]
 };
