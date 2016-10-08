@@ -106,6 +106,14 @@ class IndentWalker extends Lint.RuleWalker {
       indentSize = firstParam || indentSize;
       indentType = 'space';
     }
+    const userOptions = this.getOptions()[1];
+    if (typeof userOptions.VariableDeclarator === 'number') {
+      userOptions.VariableDeclarator =  {
+        var: userOptions.VariableDeclarator,
+        let: userOptions.VariableDeclarator,
+        const: userOptions.VariableDeclarator
+      };
+    }
     Object.assign(OPTIONS, defaultOptions, this.getOptions()[1]);
     this.srcText = sourceFile.getFullText();
   }

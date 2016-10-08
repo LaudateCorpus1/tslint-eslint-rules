@@ -24,7 +24,7 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
   ],
-  invalid: [
+  invalid: [/*
     {
       code: Lint.Utils.dedent`
         var a = b;
@@ -250,6 +250,164 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([
         [2, 4, 0],
         [3, 4, 0]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        [a, b,
+        c].forEach((index) => {
+          index;
+        });`,
+      options: [4],
+      errors: expectedErrors([
+        [3, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        [a, b,
+        c].forEach(function(index){
+          return index;
+        });`,
+      options: [4],
+      errors: expectedErrors([
+        [3, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        [a, b, c].forEach((index) => {
+          index;
+        });`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        [a, b, c].forEach(function(index){
+          return index;
+        });`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 2]
+      ])
+    },
+    {
+      code: "\nwhile (1 < 2)\nconsole.log('foo')\n  console.log('bar')",
+      options: [2],
+      errors: expectedErrors([
+        [2, 2, 0],
+        [3, 0, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function salutation () {
+          switch (1) {
+          case 0: return console.log('hi')
+            case 1: return console.log('hey')
+          }
+        }`,
+      options: [2, { SwitchCase: 1 }],
+      errors: expectedErrors([
+        [3, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth,
+        height, rotate;`,
+      options: [2, { SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 2, 0]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case '1':
+        b();
+        break;
+        default:
+        c();
+        break;
+        }`,
+      options: [4, { SwitchCase: 2 }],
+      errors: expectedErrors([
+        [2, 8, 0],
+        [3, 12, 0],
+        [4, 12, 0],
+        [5, 8, 0],
+        [6, 12, 0],
+        [7, 12, 0]
+      ])
+    },
+    {
+      code: '\nvar geometry,\nrotate;',
+      options: [2, { VariableDeclarator: 1 }],
+      errors: expectedErrors([
+        [2, 2, 0]
+      ])
+    },
+    {
+      code: '\nvar geometry,\n  rotate;',
+      options: [2, { VariableDeclarator: 2 }],
+      errors: expectedErrors([
+        [2, 4, 2]
+      ])
+    },
+    {
+      code: '\nvar geometry,\n\trotate;',
+      options: ['tab', { VariableDeclarator: 2 }],
+      errors: expectedErrors(
+        [
+          [2, 2, 1]
+        ],
+        'tab'
+      )
+    },
+    {
+      code: '\nlet geometry,\n  rotate;',
+      options: [2, { VariableDeclarator: 2 }],
+      errors: expectedErrors([
+        [2, 4, 2]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if(true)
+          if (true)
+            if (true)
+            console.log(val);`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [4, 6, 4]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var a = {
+            a: 1,
+            b: 2
+        }`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 2, 4],
+        [3, 2, 4]
+      ])
+    }, */
+    {
+      code: Lint.Utils.dedent`
+        var a = [
+            a,
+            b
+        ]`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 2, 4],
+        [3, 2, 4]
       ])
     },
   ]
