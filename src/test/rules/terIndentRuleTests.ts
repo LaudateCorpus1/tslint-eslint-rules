@@ -226,6 +226,32 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         [4, 0, 4]
       ])
     },
+    {
+      code: Lint.Utils.dedent`
+        var a = function() {
+              a++;
+            b++;
+                  c++;
+            },
+            b;`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 8, 6],
+        [3, 8, 4],
+        [4, 8, 10]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var a = 1,
+        b = 2,
+        c = 3;`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0],
+        [3, 4, 0]
+      ])
+    },
   ]
 };
 

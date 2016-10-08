@@ -76,7 +76,8 @@ export class Rule extends Lint.Rules.AbstractRule {
 
 class IndentWalker extends Lint.RuleWalker {
   private srcText: string;
-  private caseIndentStore: { [key:number]: number } = {};
+  private caseIndentStore: { [key: number]: number } = {};
+  private varIndentStore: { [key: number]: number } = {};
 
   constructor(sourceFile: ts.SourceFile, options: Lint.IOptions) {
     super(sourceFile, options);
@@ -244,8 +245,8 @@ class IndentWalker extends Lint.RuleWalker {
         node.parent.kind === ts.SyntaxKind.FunctionDeclaration ||
         node.parent.kind === ts.SyntaxKind.ArrowFunction
       )) {
-    //  this.checkIndentInFunctionBlock(node);
-      //return;
+     this.checkIndentInFunctionBlock(node);
+      return;
     }
 
     let indent;
@@ -388,7 +389,7 @@ class IndentWalker extends Lint.RuleWalker {
       // If function is standalone, simple calculate indent
       indent = this.getNodeIndent(calleeNode).goodChar;
     }
-
+console.log('INDENT:', indent);
     if (calleeNode.parent.type === "CallExpression") {
       const calleeParent = calleeNode.parent;
 
@@ -404,32 +405,35 @@ class IndentWalker extends Lint.RuleWalker {
         }
       }
     }
-
+    console.log('INDENT HERE:', indent);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
 
-    if (options.outerIIFEBody !== null && isOuterIIFE(calleeNode)) {
+    if (OPTIONS.outerIIFEBody !== null && isOuterIIFE(calleeNode)) {
       functionOffset = options.outerIIFEBody * indentSize;
     } else if (calleeNode.type === "FunctionExpression") {
       functionOffset = options.FunctionExpression.body * indentSize;
     } else if (calleeNode.type === "FunctionDeclaration") {
       functionOffset = options.FunctionDeclaration.body * indentSize;
     }
+    console.log('FN OFFSET'.red, functionOffset);
     indent += functionOffset;
 
     // check if the node is inside a variable
-    const parentVarNode = getVariableDeclaratorNode(node);
+    const parentVarNode = this.getVariableDeclaratorNode(node);
 
-    if (parentVarNode && isNodeInVarOnTop(node, parentVarNode)) {
-      indent += indentSize * OPTIONS.VariableDeclarator[parentVarNode.parent.kind];
+    if (parentVarNode && this.isNodeInVarOnTop(node, parentVarNode)) {
+      const varKind = parentVarNode.parent.getFirstToken().getText();
+      indent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 
-    if (node.body.length > 0) {
-      checkNodesIndent(node.body, indent);
+    console.log('NODE:', node, indent);
+    if (node.statements.length > 0) {
+      this.checkNodesIndent(node.statements, indent);
     }
 
-    checkLastNodeLineIndent(node, indent - functionOffset);
+    this.checkLastNodeLineIndent(node, indent - functionOffset);
   }
 
   /**
@@ -466,6 +470,27 @@ class IndentWalker extends Lint.RuleWalker {
       caseIndent = switchIndent + (indentSize * OPTIONS.SwitchCase);
       this.caseIndentStore[line] = caseIndent;
       return caseIndent;
+    }
+  }
+
+  /**
+   */
+  private expectedVarIndent(node: ts.VariableDeclaration, varIndent?: number) {
+    // VariableStatement -> VariableDeclarationList -> VariableDeclaration
+    const varNode = node.parent.parent;
+    const line = node.getSourceFile().getLineAndCharacterOfPosition(varNode.getStart()).line;
+    let indent;
+
+    if (this.varIndentStore[line]) {
+      return this.varIndentStore[line];
+    } else {
+      if (typeof varIndent === 'undefined') {
+        varIndent = this.getNodeIndent(varNode).goodChar;
+      }
+      const varKind = varNode.getFirstToken().getText();
+      indent = varIndent + (indentSize * OPTIONS.VariableDeclarator[varKind]);
+      this.varIndentStore[line] = indent;
+      return indent;
     }
   }
 
@@ -661,6 +686,52 @@ console.log('checking first node indent');
     super.visitSwitchStatement(node);
   }
 
+  /**
+   * Filter out the elements which are on the same line of each other or the node.
+   * basically have only 1 elements from each line except the variable declaration line.
+   * @param {ASTNode} node Variable declaration node
+   * @returns {ASTNode[]} Filtered elements
+   */
+  private filterOutSameLineVars(node) {
+    return node.declarations.reduce(function(finalCollection, elem) {
+      const lastElem = finalCollection[finalCollection.length - 1];
+
+      if ((elem.loc.start.line !== node.loc.start.line && !lastElem) ||
+        (lastElem && lastElem.loc.start.line !== elem.loc.start.line)) {
+        finalCollection.push(elem);
+      }
+
+      return finalCollection;
+    }, []);
+  }
+
+  /**
+   * Check indentation for variable declarations
+   * @param {ASTNode} node node to examine
+   * @returns {void}
+   */
+  private checkIndentInVariableDeclarations(node: ts.VariableDeclaration) {
+    const indent = this.expectedVarIndent(node);
+    this.checkNodeIndent(node, indent);
+
+/*
+    // Only check the last line if there is any token after the last item
+    if (sourceCode.getLastToken(node).loc.end.line <= lastElement.loc.end.line) {
+      return;
+    }
+
+    const tokenBeforeLastElement = sourceCode.getTokenBefore(lastElement);
+
+    if (tokenBeforeLastElement.value === ",") {
+
+      // Special case for comma-first syntax where the semicolon is indented
+      checkLastNodeLineIndent(node, getNodeIndent(tokenBeforeLastElement).goodChar);
+    } else {
+      checkLastNodeLineIndent(node, elementsIndent - indentSize);
+    }*/
+  }
+
+
   private visitCase(node: ts.Node) {
     if (this.isSingleLineNode(node)) {
       return;
@@ -694,6 +765,15 @@ console.log('checking first node indent');
 
   protected visitDoStatement(node: ts.DoStatement) {
     this.blockLessNodes(node);
+  }
+
+  protected visitVariableDeclarationList(node: ts.VariableDeclarationList) {
+    console.log('node:', [node]);
+  }
+
+  protected visitVariableDeclaration(node: ts.VariableDeclaration) {
+    this.checkIndentInVariableDeclarations(node);
+    super.visitVariableDeclaration(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {
