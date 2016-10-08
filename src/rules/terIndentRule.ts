@@ -273,19 +273,24 @@ class IndentWalker extends Lint.RuleWalker {
     }
 
 
-
     if (node.kind === ts.SyntaxKind.IfStatement && node['thenStatement'].kind !== ts.SyntaxKind.Block) {
-      console.log('MADE IT HERE...');
       nodesToCheck = [node['thenStatement']];
     } else {
-      nodesToCheck = node.getChildren()[1].getChildren();
+      if (node.kind === ts.SyntaxKind.Block) {
+        nodesToCheck = node.getChildren()[1].getChildren();
+      } else {
+        nodesToCheck = [node.statement];
+      }
+
+
     }
+
+
     this.checkNodeIndent(node, indent);
 
 
 
     if (nodesToCheck.length > 0) {
-      console.log('Checking children with indent', [indent]);
       this.checkNodesIndent(nodesToCheck, indent + indentSize);
     }
 
@@ -301,6 +306,7 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {boolean} True if it or its body is a block statement
    */
   private isNodeBodyBlock(node) {
+    console.log('checking node:', ts.SyntaxKind[node.kind]);
     return node.kind === ts.SyntaxKind.Block ||
         node.kind === ts.SyntaxKind.ClassExpression;
     // return node.type === "BlockStatement" || node.type === "ClassBody" || (node.body && node.body.type === "BlockStatement") ||
@@ -314,7 +320,7 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {void}
    */
   private checkFirstNodeLineIndent(node, firstLineIndent) {
-    const startIndent = this.getNodeIndent(node, false);
+    const startIndent = this.getNodeIndent(node);
     const firstInLine = startIndent.firstInLine;
     if (firstInLine && (startIndent.goodChar !== firstLineIndent || startIndent.badChar !== 0)) {
       this.report(
@@ -435,7 +441,6 @@ class IndentWalker extends Lint.RuleWalker {
    */
   protected checkNodesIndent(nodes: ts.Node[], indent: number) {
     nodes.forEach(node => {
-      console.log('checking node in loop:', [node.getFullText(), indent]);
       this.checkNodeIndent(node, indent);
     });
   }
@@ -610,6 +615,19 @@ console.log('checking first node indent');
       varNode.parent.declarations.length > 1;
   }
 
+  /**
+   * Check and decide whether to check for indentation for blockless nodes
+   * Scenarios are for or while statements without braces around them
+   * @param {ASTNode} node node to examine
+   * @returns {void}
+   */
+  protected blockLessNodes(node) {
+    if (node.statement.kind !== ts.SyntaxKind.Block) {
+      console.log('node:', [node.statement.getText()]);
+      this.blockIndentationCheck(node);
+    }
+  }
+
   protected visitBinaryExpression(node: ts.BinaryExpression) {
     // this.validateUseIsnan(node);
     super.visitBinaryExpression(node);
@@ -638,9 +656,9 @@ console.log('checking first node indent');
   protected visitSwitchStatement(node: ts.SwitchStatement) {
     const switchIndent = this.getNodeIndent(node).goodChar;
     const caseIndent = this.expectedCaseIndent(node, switchIndent);
-    super.visitSwitchStatement(node);
     this.checkNodesIndent(node.caseBlock.clauses, caseIndent);
     this.checkLastNodeLineIndent(node, switchIndent);
+    super.visitSwitchStatement(node);
   }
 
   private visitCase(node: ts.Node) {
@@ -653,12 +671,29 @@ console.log('checking first node indent');
 
   protected visitCaseClause(node: ts.CaseClause) {
     this.visitCase(node);
-    super.visitCaseClause(node);
+    // super.visitCaseClause(node);
   }
 
   protected visitDefaultClause(node: ts.DefaultClause) {
     this.visitCase(node);
-    super.visitDefaultClause(node);
+    // super.visitDefaultClause(node);
+  }
+
+  protected visitWhileStatement(node: ts.WhileStatement) {
+    this.blockLessNodes(node);
+    // super.visitWhileStatement(node);
+  }
+
+  protected visitForStatement(node: ts.ForStatement) {
+    this.blockLessNodes(node);
+  }
+
+  protected visitForInStatement(node: ts.ForInStatement) {
+    this.blockLessNodes(node);
+  }
+
+  protected visitDoStatement(node: ts.DoStatement) {
+    this.blockLessNodes(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {

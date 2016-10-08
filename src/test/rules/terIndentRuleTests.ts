@@ -154,7 +154,78 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         console.log(foo + bar);
         }`,
       errors: expectedErrors([[3, 4, 0]])
-    }
+    },
+    {
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case '1':
+        b();
+        break;
+        default:
+        c();
+        break;
+        }`,
+      options: [4, { SwitchCase: 1 }],
+      errors: expectedErrors([
+        [2, 4, 0],
+        [3, 8, 0],
+        [4, 8, 0],
+        [5, 4, 0],
+        [6, 8, 0],
+        [7, 8, 0]
+      ])
+    },
+    {
+      code: '\nwhile (a)\nb();\n',
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0]
+      ])
+    },
+    {
+      code: '\nfor (;;) \nb();\n',
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0]
+      ])
+    },
+    {
+      code: '\nfor (a in x) \nb();',
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        do
+        b();
+        while(true)`,
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0]
+      ])
+    },
+    {
+      code: '\nif(true) \nb();',
+      options: [4],
+      errors: expectedErrors([
+        [2, 4, 0]
+      ])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var test = {
+              a: 1,
+            b: 2
+            };`,
+      options: [2],
+      errors: expectedErrors([
+        [2, 2, 6],
+        [3, 2, 4],
+        [4, 0, 4]
+      ])
+    },
   ]
 };
 
