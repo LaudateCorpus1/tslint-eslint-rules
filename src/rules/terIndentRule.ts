@@ -75,6 +75,7 @@ export class Rule extends Lint.Rules.AbstractRule {
 }
 
 class IndentWalker extends Lint.RuleWalker {
+  private srcFile: ts.SourceFile;
   private srcText: string;
   private caseIndentStore: { [key: number]: number } = {};
   private varIndentStore: { [key: number]: number } = {};
@@ -136,11 +137,17 @@ class IndentWalker extends Lint.RuleWalker {
         Object.assign(OPTIONS.FunctionExpression, userOptions.FunctionExpression);
       }
     }
+    this.srcFile = sourceFile;
     this.srcText = sourceFile.getFullText();
   }
 
   private getSourceSubstr(start: number, end: number) {
     return this.srcText.substr(start, end - start);
+  }
+
+  private getLineAndCharacter(node: ts.Node, byEndLocation: boolean = false) {
+    const index = byEndLocation ? node.getEnd() : node.getStart();
+    return this.srcFile.getLineAndCharacterOfPosition(index);
   }
 
   /**
@@ -523,7 +530,7 @@ class IndentWalker extends Lint.RuleWalker {
    */
   private expectedCaseIndent(node: ts.Node, switchIndent?: number) {
     const switchNode = (node.kind === ts.SyntaxKind.SwitchStatement) ? node : node.parent;
-    const line = node.getSourceFile().getLineAndCharacterOfPosition(switchNode.getStart()).line;
+    const line = this.getLineAndCharacter(switchNode).line;
     let caseIndent;
 
     if (this.caseIndentStore[line]) {
@@ -544,7 +551,7 @@ class IndentWalker extends Lint.RuleWalker {
   private expectedVarIndent(node: ts.VariableDeclaration, varIndent?: number) {
     // VariableStatement -> VariableDeclarationList -> VariableDeclaration
     const varNode = node.parent.parent;
-    const line = node.getSourceFile().getLineAndCharacterOfPosition(varNode.getStart()).line;
+    const line = this.getLineAndCharacter(varNode).line;
     let indent;
 
     if (this.varIndentStore[line]) {
@@ -604,13 +611,12 @@ class IndentWalker extends Lint.RuleWalker {
       return elem !== null;
     });
 
-    const file = node.getSourceFile();
-    const nodeLine = file.getLineAndCharacterOfPosition(node.getStart()).line;
-    const nodeEndLine = file.getLineAndCharacterOfPosition(node.getEnd()).line;
+    const nodeLine = this.getLineAndCharacter(node).line;
+    const nodeEndLine = this.getLineAndCharacter(node, true).line;
 
     // Skip if first element is in same line with this node
     if (elements.length) {
-      const firstElementLine = file.getLineAndCharacterOfPosition(elements[0].getStart()).line;
+      const firstElementLine = this.getLineAndCharacter(elements[0]).line;
       if (nodeLine === firstElementLine) {
         return;
       }
@@ -634,11 +640,11 @@ class IndentWalker extends Lint.RuleWalker {
       }
 
       nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
-      const parentVarNodeLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
+      const parentVarNodeLine = this.getLineAndCharacter(parentVarNode).line;
       if (parentVarNode && parentVarNodeLine !== nodeLine) {
         if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
-          const parentVarLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
-          const effectiveParentLine = file.getLineAndCharacterOfPosition(effectiveParent.getStart()).line;
+          const parentVarLine = this.getLineAndCharacter(parentVarNode).line;
+          const effectiveParentLine = this.getLineAndCharacter(effectiveParent).line;
           if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarLine === effectiveParentLine) {
             varKind = parentVarNode.parent.getFirstToken().getText();
             nodeIndent = nodeIndent + (indentSize * OPTIONS.VariableDeclarator[varKind]);
@@ -676,7 +682,7 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodesIndent(elements, elementsIndent);
 
     if (elements.length > 0) {
-      const lastLine = file.getLineAndCharacterOfPosition(elements[elements.length - 1].getEnd()).line;
+      const lastLine = this.getLineAndCharacter(elements[elements.length - 1], true).line;
       // Skip last block line check if last item in same line
       if (lastLine === nodeEndLine) {
         return;
@@ -694,9 +700,8 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {boolean} True if all the above condition satisfy
    */
   protected isNodeInVarOnTop(node: ts.Node, varNode) {
-    const file = node.getSourceFile();
-    const nodeLine = file.getLineAndCharacterOfPosition(node.getStart()).line;
-    const parentLine = file.getLineAndCharacterOfPosition(varNode.parent.getStart()).line;
+    const nodeLine = this.getLineAndCharacter(node).line;
+    const parentLine = this.getLineAndCharacter(varNode.parent).line;
     return varNode &&
       parentLine === nodeLine &&
       varNode.parent.declarations.length > 1;
@@ -737,9 +742,8 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   protected visitIfStatement(node: ts.IfStatement) {
-    const file = node.getSourceFile();
-    const thenLine = file.getLineAndCharacterOfPosition(node.thenStatement.getStart()).line;
-    const line = file.getLineAndCharacterOfPosition(node.getStart()).line;
+    const thenLine = this.getLineAndCharacter(node.thenStatement).line;
+    const line = this.getLineAndCharacter(node).line;
     if (node.thenStatement.kind !== ts.SyntaxKind.Block && thenLine > line) {
       this.blockIndentationCheck(node);
     }
@@ -823,9 +827,8 @@ class IndentWalker extends Lint.RuleWalker {
     const len = list.getChildCount();
     const lastElement = list.getChildAt(len - 1);
     const lastToken = node.getLastToken();
-    const file = node.getSourceFile();
-    const lastTokenLine = file.getLineAndCharacterOfPosition(lastToken.getEnd()).line;
-    const lastElementLine = file.getLineAndCharacterOfPosition(lastElement.getEnd()).line;
+    const lastTokenLine = this.getLineAndCharacter(lastToken, true).line;
+    const lastElementLine = this.getLineAndCharacter(lastElement, true).line;
 
     // Only check the last line if there is any token after the last item
     if (lastTokenLine <= lastElementLine) {
@@ -846,8 +849,7 @@ class IndentWalker extends Lint.RuleWalker {
       return;
     }
     if (OPTIONS.FunctionDeclaration.parameters === 'first' && node.parameters.length) {
-      const firstParamIndex = node.parameters[0].getStart();
-      const indent = node.getSourceFile().getLineAndCharacterOfPosition(firstParamIndex).character;
+      const indent = this.getLineAndCharacter(node.parameters[0]).character;
       this.checkNodesIndent(node.parameters.slice(1), indent);
     } else if (OPTIONS.FunctionDeclaration.parameters !== null) {
       this.checkNodesIndent(
@@ -864,8 +866,7 @@ class IndentWalker extends Lint.RuleWalker {
       return;
     }
     if (OPTIONS.FunctionExpression.parameters === 'first' && node.parameters.length) {
-      const firstParamIndex = node.parameters[0].getStart();
-      const indent = node.getSourceFile().getLineAndCharacterOfPosition(firstParamIndex).character;
+      const indent = this.getLineAndCharacter(node.parameters[0]).character;
       this.checkNodesIndent(node.parameters.slice(1), indent);
     } else if (OPTIONS.FunctionExpression.parameters !== null) {
       this.checkNodesIndent(
