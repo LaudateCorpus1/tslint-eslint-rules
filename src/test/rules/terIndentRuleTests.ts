@@ -29,7 +29,7 @@ function expectedErrors(errors: [[number, NumStr, NumStr]], indentType: string =
  */
 const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
-  valid: [/*
+  valid: [ /*
     {
       code:
       "bridge.callHandler(\n" +
@@ -155,7 +155,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       code:
         "var x = 0 && { a: 1, b: 2 };",
       options: [4]
-    }, */
+    },
     {
       code:
       "require('http').request({hostname: 'localhost',\n" +
@@ -164,22 +164,790 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "});\n",
       options: [2]
     },
+    {
+      code:
+      "function test() {\n" +
+      "  return client.signUp(email, PASSWORD, { preVerified: true })\n" +
+      "    .then(function (result) {\n" +
+      "      // hi\n" +
+      "    })\n" +
+      "    .then(function () {\n" +
+      "      return FunctionalHelpers.clearBrowserState(self, {\n" +
+      "        contentServer: true,\n" +
+      "        contentServer1: true\n" +
+      "      });\n" +
+      "    });\n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+      "it('should... some lengthy test description that is forced to be' +\n" +
+      "  'wrapped into two lines since the line length limit is set', () => {\n" +
+      "  expect(true).toBe(true);\n" +
+      "});\n",
+      options: [2]
+    },
+    {
+      code:
+      "function test() {\n" +
+      "    return client.signUp(email, PASSWORD, { preVerified: true })\n" +
+      "        .then(function (result) {\n" +
+      "            var x = 1;\n" +
+      "            var y = 1;\n" +
+      "        }, function(err){\n" +
+      "            var o = 1 - 2;\n" +
+      "            var y = 1 - 2;\n" +
+      "            return true;\n" +
+      "        })\n" +
+      "}",
+      options: [4]
+    },
+    {
+      code:
+      "function test() {\n" +
+      "    return client.signUp(email, PASSWORD, { preVerified: true })\n" +
+      "    .then(function (result) {\n" +
+      "        var x = 1;\n" +
+      "        var y = 1;\n" +
+      "    }, function(err){\n" +
+      "        var o = 1 - 2;\n" +
+      "        var y = 1 - 2;\n" +
+      "        return true;\n" +
+      "    });\n" +
+      "}",
+      options: [4, {MemberExpression: 0}]
+    },
+    {
+      code:
+        "// hi",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var Command = function() {\n" +
+      "  var fileList = [],\n" +
+      "      files = []\n" +
+      "\n" +
+      "  files.concat(fileList)\n" +
+      "};\n",
+      options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
+    },
+    {
+      code:
+        "  ",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "if(data) {\n" +
+      "  console.log('hi');\n" +
+      "  b = true;};",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "foo = () => {\n" +
+      "  console.log('hi');\n" +
+      "  return true;};",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "function test(data) {\n" +
+      "  console.log('hi');\n" +
+      "  return true;};",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var test = function(data) {\n" +
+      "  console.log('hi');\n" +
+      "};",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "arr.forEach(function(data) {\n" +
+      "  otherdata.forEach(function(zero) {\n" +
+      "    console.log('hi');\n" +
+      "  }) });",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "a = [\n" +
+      "    ,3\n" +
+      "]",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "[\n" +
+      "  ['gzip', 'gunzip'],\n" +
+      "  ['gzip', 'unzip'],\n" +
+      "  ['deflate', 'inflate'],\n" +
+      "  ['deflateRaw', 'inflateRaw'],\n" +
+      "].forEach(function(method) {\n" +
+      "  console.log(method);\n" +
+      "});\n",
+      options: [2, {SwitchCase: 1, VariableDeclarator: 2}]
+    },
+    {
+      code:
+      "test(123, {\n" +
+      "    bye: {\n" +
+      "        hi: [1,\n" +
+      "            {\n" +
+      "                b: 2\n" +
+      "            }\n" +
+      "        ]\n" +
+      "    }\n" +
+      "});",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var xyz = 2,\n" +
+      "    lmn = [\n" +
+      "        {\n" +
+      "            a: 1\n" +
+      "        }\n" +
+      "    ];",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "lmn = [{\n" +
+      "    a: 1\n" +
+      "},\n" +
+      "{\n" +
+      "    b: 2\n" +
+      "}," +
+      "{\n" +
+      "    x: 2\n" +
+      "}];",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "abc({\n" +
+      "    test: [\n" +
+      "        [\n" +
+      "            c,\n" +
+      "            xyz,\n" +
+      "            2\n" +
+      "        ].join(',')\n" +
+      "    ]\n" +
+      "});",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "abc = {\n" +
+      "  test: [\n" +
+      "    [\n" +
+      "      c,\n" +
+      "      xyz,\n" +
+      "      2\n" +
+      "    ]\n" +
+      "  ]\n" +
+      "};",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "abc(\n" +
+      "  {\n" +
+      "    a: 1,\n" +
+      "    b: 2\n" +
+      "  }\n" +
+      ");",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "abc({\n" +
+      "    a: 1,\n" +
+      "    b: 2\n" +
+      "});",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var abc = \n" +
+      "  [\n" +
+      "    c,\n" +
+      "    xyz,\n" +
+      "    {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    }\n" +
+      "  ];",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var abc = [\n" +
+      "  c,\n" +
+      "  xyz,\n" +
+      "  {\n" +
+      "    a: 1,\n" +
+      "    b: 2\n" +
+      "  }\n" +
+      "];",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var abc = 5,\n" +
+      "    c = 2,\n" +
+      "    xyz = \n" +
+      "    {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    };",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var abc = \n" +
+      "    {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    };",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var a = new abc({\n" +
+      "        a: 1,\n" +
+      "        b: 2\n" +
+      "    }),\n" +
+      "    b = 2;",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var a = 2,\n" +
+      "  c = {\n" +
+      "    a: 1,\n" +
+      "    b: 2\n" +
+      "  },\n" +
+      "  b = 2;",
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var x = 2,\n" +
+      "    y = {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    },\n" +
+      "    b = 2;",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var e = {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    },\n" +
+      "    b = 2;",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var a = {\n" +
+      "  a: 1,\n" +
+      "  b: 2\n" +
+      "};",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "function test() {\n" +
+      "  if (true ||\n " +
+      "            false){\n" +
+      "    console.log(val);\n" +
+      "  }\n" +
+      "}",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "for (var val in obj)\n" +
+      "  if (true)\n" +
+      "    console.log(val);",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "if(true)\n" +
+      "  if (true)\n" +
+      "    if (true)\n" +
+      "      console.log(val);",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "function hi(){     var a = 1;\n" +
+      "  y++;                   x++;\n" +
+      "}",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "for(;length > index; index++)if(NO_HOLES || index in self){\n" +
+      "  x++;\n" +
+      "}",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "function test(){\n" +
+      "  switch(length){\n" +
+      "    case 1: return function(a){\n" +
+      "      return fn.call(that, a);\n" +
+      "    };\n" +
+      "  }\n" +
+      "}",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var geometry = 2,\n" +
+      "rotate = 2;",
+      options: [2, {VariableDeclarator: 0}]
+    },
+    {
+      code:
+      "var geometry,\n" +
+      "    rotate;",
+      options: [4, {VariableDeclarator: 1}]
+    },
+    {
+      code:
+      "var geometry,\n" +
+      "\trotate;",
+      options: ["tab", {VariableDeclarator: 1}]
+    },
+    {
+      code:
+      "var geometry,\n" +
+      "  rotate;",
+      options: [2, {VariableDeclarator: 1}]
+    },
+    {
+      code:
+      "var geometry,\n" +
+      "    rotate;",
+      options: [2, {VariableDeclarator: 2}]
+    },
+    {
+      code:
+      "let geometry,\n" +
+      "    rotate;",
+      options: [2, {VariableDeclarator: 2}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "const geometry = 2,\n" +
+      "    rotate = 3;",
+      options: [2, {VariableDeclarator: 2}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth,\n" +
+      "  height, rotate;",
+      options: [2, {SwitchCase: 1}]
+    },
+    {
+      code:
+        "var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth;",
+      options: [2, {SwitchCase: 1}]
+    },
+    {
+      code:
+      "if (1 < 2){\n" +
+      "//hi sd \n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+      "while (1 < 2){\n" +
+      "  //hi sd \n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+        "while (1 < 2) console.log('hi');",
+      options: [2]
+    },
+    {
+      code:
+      "[a, b, \nc].forEach((index) => {\n" +
+      "    index;\n" +
+      "});\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "[a, b, \nc].forEach(function(index){\n" +
+      "    return index;\n" +
+      "});\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "[a, b, c].forEach((index) => {\n" +
+      "    index;\n" +
+      "});\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "[a, b, c].forEach(function(index){\n" +
+      "    return index;\n" +
+      "});\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "switch (x) {\n" +
+      "    case \"foo\":\n" +
+      "        a();\n" +
+      "        break;\n" +
+      "    case \"bar\":\n" +
+      "        switch (y) {\n" +
+      "            case \"1\":\n" +
+      "                break;\n" +
+      "            case \"2\":\n" +
+      "                a = 6;\n" +
+      "                break;\n" +
+      "        }\n" +
+      "    case \"test\":\n" +
+      "        break;\n" +
+      "}",
+      options: [4, {SwitchCase: 1}]
+    },
+    {
+      code:
+      "switch (x) {\n" +
+      "        case \"foo\":\n" +
+      "            a();\n" +
+      "            break;\n" +
+      "        case \"bar\":\n" +
+      "            switch (y) {\n" +
+      "                    case \"1\":\n" +
+      "                        break;\n" +
+      "                    case \"2\":\n" +
+      "                        a = 6;\n" +
+      "                        break;\n" +
+      "            }\n" +
+      "        case \"test\":\n" +
+      "            break;\n" +
+      "}",
+      options: [4, {SwitchCase: 2}]
+    },
+    {
+      code:
+      "switch (a) {\n" +
+      "case \"foo\":\n" +
+      "    a();\n" +
+      "    break;\n" +
+      "case \"bar\":\n" +
+      "    switch(x){\n" +
+      "    case '1':\n" +
+      "        break;\n" +
+      "    case '2':\n" +
+      "        a = 6;\n" +
+      "        break;\n" +
+      "    }\n" +
+      "}"
+    },
+    {
+      code:
+      "switch (a) {\n" +
+      "case \"foo\":\n" +
+      "    a();\n" +
+      "    break;\n" +
+      "case \"bar\":\n" +
+      "    if(x){\n" +
+      "        a = 2;\n" +
+      "    }\n" +
+      "    else{\n" +
+      "        a = 6;\n" +
+      "    }\n" +
+      "}"
+    },
+    {
+      code:
+      "switch (a) {\n" +
+      "case \"foo\":\n" +
+      "    a();\n" +
+      "    break;\n" +
+      "case \"bar\":\n" +
+      "    if(x){\n" +
+      "        a = 2;\n" +
+      "    }\n" +
+      "    else\n" +
+      "        a = 6;\n" +
+      "}"
+    },
+    {
+      code:
+      "switch (a) {\n" +
+      "case \"foo\":\n" +
+      "    a();\n" +
+      "    break;\n" +
+      "case \"bar\":\n" +
+      "    a(); break;\n" +
+      "case \"baz\":\n" +
+      "    a(); break;\n" +
+      "}"
+    },
+    {
+      code: "switch (0) {\n}"
+    },
+    {
+      code:
+      "function foo() {\n" +
+      "    var a = \"a\";\n" +
+      "    switch(a) {\n" +
+      "    case \"a\":\n" +
+      "        return \"A\";\n" +
+      "    case \"b\":\n" +
+      "        return \"B\";\n" +
+      "    }\n" +
+      "}\n" +
+      "foo();"
+    },
+    {
+      code:
+      "switch(value){\n" +
+      "    case \"1\":\n" +
+      "    case \"2\":\n" +
+      "        a();\n" +
+      "        break;\n" +
+      "    default:\n" +
+      "        a();\n" +
+      "        break;\n" +
+      "}\n" +
+      "switch(value){\n" +
+      "    case \"1\":\n" +
+      "        a();\n" +
+      "        break;\n" +
+      "    case \"2\":\n" +
+      "        break;\n" +
+      "    default:\n" +
+      "        break;\n" +
+      "}",
+      options: [4, {SwitchCase: 1}]
+    },
+    {
+      code:
+      "var obj = {foo: 1, bar: 2};\n" +
+      "with (obj) {\n" +
+      "    console.log(foo + bar);\n" +
+      "}\n"
+    },
+    {
+      code:
+      "if (a) {\n" +
+      "    (1 + 2 + 3);\n" + // no error on this line
+      "}"
+    },
+    {
+      code:
+        "switch(value){ default: a(); break; }\n"
+    },
+    {
+      code: "import {addons} from 'react/addons'\nimport React from 'react'",
+      options: [2],
+      parserOptions: { sourceType: "module" }
+    },
+    {
+      code:
+      "var a = 1,\n" +
+      "    b = 2,\n" +
+      "    c = 3;\n",
+      options: [4]
+    },
+    {
+      code:
+      "var a = 1\n" +
+      "   ,b = 2\n" +
+      "   ,c = 3;\n",
+      options: [4]
+    },
+    {
+      code: "while (1 < 2) console.log('hi')\n",
+      options: [2]
+    },
+    {
+      code:
+      "function salutation () {\n" +
+      "  switch (1) {\n" +
+      "    case 0: return console.log('hi')\n" +
+      "    case 1: return console.log('hey')\n" +
+      "  }\n" +
+      "}\n",
+      options: [2, { SwitchCase: 1 }]
+    },
+    {
+      code:
+      "var items = [\n" +
+      "  {\n" +
+      "    foo: 'bar'\n" +
+      "  }\n" +
+      "];\n",
+      options: [2, {VariableDeclarator: 2}]
+    },
+    {
+      code:
+      "const a = 1,\n" +
+      "      b = 2;\n" +
+      "const items1 = [\n" +
+      "  {\n" +
+      "    foo: 'bar'\n" +
+      "  }\n" +
+      "];\n" +
+      "const items2 = Items(\n" +
+      "  {\n" +
+      "    foo: 'bar'\n" +
+      "  }\n" +
+      ");\n",
+      options: [2, {VariableDeclarator: 3}],
+      parserOptions: { ecmaVersion: 6 }
+
+    },
+    {
+      code:
+      "const geometry = 2,\n" +
+      "      rotate = 3;\n" +
+      "var a = 1,\n" +
+      "  b = 2;\n" +
+      "let light = true,\n" +
+      "    shadow = false;",
+      options: [2, { VariableDeclarator: { const: 3, let: 2 } }],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "const abc = 5,\n" +
+      "      c = 2,\n" +
+      "      xyz = \n" +
+      "      {\n" +
+      "        a: 1,\n" +
+      "        b: 2\n" +
+      "      };\n" +
+      "let abc = 5,\n" +
+      "  c = 2,\n" +
+      "  xyz = \n" +
+      "  {\n" +
+      "    a: 1,\n" +
+      "    b: 2\n" +
+      "  };\n" +
+      "var abc = 5,\n" +
+      "    c = 2,\n" +
+      "    xyz = \n" +
+      "    {\n" +
+      "      a: 1,\n" +
+      "      b: 2\n" +
+      "    };\n",
+      options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    }, */
+    {
+      code:
+      "module.exports =\n" +
+      "{\n" +
+      "  'Unit tests':\n" +
+      "  {\n" +
+      "    rootPath: './',\n" +
+      "    environment: 'node',\n" +
+      "    tests:\n" +
+      "    [\n" +
+      "      'test/test-*.js'\n" +
+      "    ],\n" +
+      "    sources:\n" +
+      "    [\n" +
+      "      '*.js',\n" +
+      "      'test/**.js'\n" +
+      "    ]\n" +
+      "  }\n" +
+      "};",
+      options: [2]
+    },
     // {
     //   code:
-    //   "function test() {\n" +
-    //   "  return client.signUp(email, PASSWORD, { preVerified: true })\n" +
-    //   "    .then(function (result) {\n" +
-    //   "      // hi\n" +
-    //   "    })\n" +
-    //   "    .then(function () {\n" +
-    //   "      return FunctionalHelpers.clearBrowserState(self, {\n" +
-    //   "        contentServer: true,\n" +
-    //   "        contentServer1: true\n" +
-    //   "      });\n" +
-    //   "    });\n" +
-    //   "}",
+    //   "var path     = require('path')\n" +
+    //   "  , crypto    = require('crypto')\n" +
+    //   "  ;\n",
     //   options: [2]
     // },
+    // {
+    //   code:
+    //   "var a = 1\n" +
+    //   "   ,b = 2\n" +
+    //   "   ;"
+    // },
+    // {
+    //   code:
+    //   "export function create (some,\n" +
+    //   "                        argument) {\n" +
+    //   "  return Object.create({\n" +
+    //   "    a: some,\n" +
+    //   "    b: argument\n" +
+    //   "  });\n" +
+    //   "};",
+    //   parserOptions: { sourceType: "module" },
+    //   options: [2]
+    // },
+    // {
+    //   code:
+    //   "export function create (id, xfilter, rawType,\n" +
+    //   "                        width=defaultWidth, height=defaultHeight,\n" +
+    //   "                        footerHeight=defaultFooterHeight,\n" +
+    //   "                        padding=defaultPadding) {\n" +
+    //   "  // ... function body, indented two spaces\n" +
+    //   "}\n",
+    //   parserOptions: { sourceType: "module" },
+    //   options: [2]
+    // },
+    // {
+    //   code:
+    //   "var obj = {\n" +
+    //   "  foo: function () {\n" +
+    //   "    return new p()\n" +
+    //   "      .then(function (ok) {\n" +
+    //   "        return ok;\n" +
+    //   "      }, function () {\n" +
+    //   "        // ignore things\n" +
+    //   "      });\n" +
+    //   "  }\n" +
+    //   "};\n",
+    //   options: [2]
+    // },
+    // {
+    //   code:
+    //   "a.b()\n" +
+    //   "  .c(function(){\n" +
+    //   "    var a;\n" +
+    //   "  }).d.e;\n",
+    //   options: [2]
+    // },
+
   ],
   invalid: [
     {
@@ -1129,8 +1897,8 @@ describe(rule, () => {
     runTest(rule, scripts.valid);
   });
 
-  it('should fail when using wrong indentation', () => {
-    runTest(rule, scripts.invalid);
-  });
+  // it('should fail when using wrong indentation', () => {
+  //   runTest(rule, scripts.invalid);
+  // });
 
 });

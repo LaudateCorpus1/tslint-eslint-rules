@@ -435,6 +435,22 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   /**
+   * Check to see if the argument before the callee node is multi-line and
+   * there should only be 1 argument before the callee node
+   * @param {ASTNode} node node to check
+   * @returns {boolean} True if arguments are multi-line
+   */
+  private isArgBeforeCalleeNodeMultiline(node: ts.Node) {
+    const parent = node.parent;
+    if (parent['arguments'].length >= 2 && parent['arguments'][1] === node) {
+      const firstArg = parent['arguments'][0];
+      return this.getLineAndCharacter(firstArg, true).line > this.getLineAndCharacter(firstArg).line;
+    }
+
+    return false;
+  }
+
+  /**
    * Check indent for function block content
    * @param {ASTNode} node A BlockStatement node that is inside of a function.
    * @returns {void}
@@ -469,17 +485,21 @@ class IndentWalker extends Lint.RuleWalker {
       // If function is standalone, simple calculate indent
       indent = this.getNodeIndent(calleeNode).goodChar;
     }
-    if (calleeNode.parent.type === "CallExpression") {
+
+    if (calleeNode.parent.kind === ts.SyntaxKind.CallExpression) {
       const calleeParent = calleeNode.parent;
 
-      if (calleeNode.type !== "FunctionExpression" && calleeNode.type !== "ArrowFunctionExpression") {
-        if (calleeParent && calleeParent.loc.start.line < node.loc.start.line) {
+      if (calleeNode.kind !== ts.SyntaxKind.FunctionExpression && calleeNode.kind !== ts.SyntaxKind.ArrowFunction) {
+        if (calleeParent && this.getLineAndCharacter(calleeParent).line < this.getLineAndCharacter(node).line) {
           indent = this.getNodeIndent(calleeParent).goodChar;
         }
       } else {
-        if (isArgBeforeCalleeNodeMultiline(calleeNode) &&
-          calleeParent.callee.loc.start.line === calleeParent.callee.loc.end.line &&
-          !isNodeFirstInLine(calleeNode)) {
+        const callee = calleeParent.expression;
+        if (
+          this.isArgBeforeCalleeNodeMultiline(calleeNode) &&
+          this.getLineAndCharacter(callee).line === this.getLineAndCharacter(callee, true).line &&
+          !this.isNodeFirstInLine(calleeNode)) {
+          console.log('getting here...');
           indent = this.getNodeIndent(calleeParent).goodChar;
         }
       }
@@ -495,6 +515,7 @@ class IndentWalker extends Lint.RuleWalker {
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
     indent += functionOffset;
+    console.log('indent'.red, [indent]);
 
     // check if the node is inside a variable
     const parentVarNode = this.getVariableDeclaratorNode(node);
@@ -611,6 +632,11 @@ class IndentWalker extends Lint.RuleWalker {
       return elem !== null;
     });
 
+    // Skip if first element is in same line with this node
+    if (elements.length && this.getLineAndCharacter(elements[0]).line === this.getLineAndCharacter(node).line) {
+      return;
+    }
+
     const nodeLine = this.getLineAndCharacter(node).line;
     const nodeEndLine = this.getLineAndCharacter(node, true).line;
 
@@ -640,8 +666,7 @@ class IndentWalker extends Lint.RuleWalker {
       }
 
       nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
-      const parentVarNodeLine = this.getLineAndCharacter(parentVarNode).line;
-      if (parentVarNode && parentVarNodeLine !== nodeLine) {
+      if (parentVarNode && this.getLineAndCharacter(parentVarNode).line !== nodeLine) {
         if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
           const parentVarLine = this.getLineAndCharacter(parentVarNode).line;
           const effectiveParentLine = this.getLineAndCharacter(effectiveParent).line;
@@ -659,7 +684,14 @@ class IndentWalker extends Lint.RuleWalker {
             nodeIndent = nodeIndent + indentSize;
           }
         }
-      } else if (!parentVarNode && !isFirstArrayElementOnSameLine(parent) && effectiveParent.type !== "MemberExpression" && effectiveParent.type !== "ExpressionStatement" && effectiveParent.type !== "AssignmentExpression" && effectiveParent.type !== "Property") {
+      } else if (
+        !parentVarNode &&
+        !this.isFirstArrayElementOnSameLine(parent) &&
+        effectiveParent.kind !== ts.SyntaxKind.PropertyAccessExpression &&
+        effectiveParent.kind !== ts.SyntaxKind.ExpressionStatement &&
+        effectiveParent.kind !== ts.SyntaxKind.FirstAssignment &&
+        effectiveParent.kind !== ts.SyntaxKind.PropertyAssignment
+      ) {
         nodeIndent = nodeIndent + indentSize;
       }
 
@@ -674,7 +706,7 @@ class IndentWalker extends Lint.RuleWalker {
        * Check if the node is a multiple variable declaration; if so, then
        * make sure indentation takes that into account.
        */
-    if (this.isNodeInVarOnTop(node, parentVarNode)) {
+    if (parentVarNode && this.isNodeInVarOnTop(node, parentVarNode)) {
       varKind = parentVarNode.parent.getFirstToken().getText();
       elementsIndent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
@@ -693,6 +725,19 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   /**
+   * Check to see if the first element inside an array is an object and on the same line as the node
+   * If the node is not an array then it will return false.
+   * @param {ASTNode} node node to check
+   * @returns {boolean} success/failure
+   */
+  private isFirstArrayElementOnSameLine(node: ts.Node) {
+    if (node.kind === ts.SyntaxKind.ArrayLiteralExpression && node.elements[0]) {
+      return this.getLineAndCharacter(node.elements[0]).line === this.getLineAndCharacter(node).line && node.elements[0].kind === ts.SyntaxKind.ObjectLiteralExpression;
+    }
+    return false;
+  }
+
+  /**
    * Check to see if the node is part of the multi-line variable declaration.
    * Also if its on the same line as the varNode
    * @param {ASTNode} node node to check
@@ -700,6 +745,10 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {boolean} True if all the above condition satisfy
    */
   protected isNodeInVarOnTop(node: ts.Node, varNode) {
+
+    console.log('node:', [node.getText()]);
+    console.log('parentVarNode:', [varNode.getText()]);
+
     const nodeLine = this.getLineAndCharacter(node).line;
     const parentLine = this.getLineAndCharacter(varNode.parent).line;
     return varNode &&
