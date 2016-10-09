@@ -1,8 +1,16 @@
 /// <reference path='../../../typings/mocha/mocha.d.ts' />
+import * as fs from 'fs';
+import * as path from 'path';
 import * as Lint from 'tslint/lib/lint';
 import { runTest, IScripts, IScriptError } from './helper';
 
-function expectedErrors(errors: (number|string)[][], indentType: string = 'space'): IScriptError[] {
+const fixture = fs.readFileSync(
+  path.join(__dirname, '../../../src/test/fixtures/indent-invalid.txt'), 'utf8'
+);
+console.log('FIXTURE:', fixture);
+type NumStr = number | string;
+
+function expectedErrors(errors: [[number, NumStr, NumStr]], indentType: string = 'space'): IScriptError[] {
   return errors.map((err) => {
     let message;
 
@@ -24,7 +32,7 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
   ],
-  invalid: [ /*
+  invalid: [
     {
       code: Lint.Utils.dedent`
         var a = b;
@@ -823,7 +831,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       code: '\nfunction foo() {\n\tbar();\n  baz();\n              qux();\n}',
       options: ['tab'],
       errors: expectedErrors([[3, '1 tab', '2 spaces'], [4, '1 tab', '14 spaces']], 'tab')
-    }, */
+    },
     {
       code: [
         '\nfunction foo() {',
@@ -864,7 +872,105 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         }`,
       options: [2, { FunctionExpression: { parameters: 3 } }],
       errors: expectedErrors([[3, 8, 10]])
-    }
+    },/*
+    {
+      code: fixture,
+      options: [2, { SwitchCase: 1, MemberExpression: 1 }],
+      errors: expectedErrors([
+        [5, 2, 4],
+        [10, 4, 6],
+        [11, 2, 4],
+        [15, 4, 2],
+        [16, 2, 4],
+        [23, 2, 4],
+        [29, 2, 4],
+        [31, 4, 2],
+        [36, 4, 6],
+        [38, 2, 4],
+        [39, 4, 2],
+        [40, 2, 0],
+        [46, 0, 1],
+        [54, 2, 4],
+        [114, 4, 2],
+        [120, 4, 6],
+        [124, 4, 2],
+        [134, 4, 6],
+        [138, 2, 3],
+        [139, 2, 3],
+        [143, 4, 0],
+        [151, 4, 6],
+        [159, 4, 2],
+        [161, 4, 6],
+        [175, 2, 0],
+        [177, 2, 4],
+        [189, 2, 0],
+        [193, 6, 4],
+        [195, 6, 8],
+        [304, 4, 6],
+        [306, 4, 8],
+        [307, 2, 4],
+        [308, 2, 4],
+        [311, 4, 6],
+        [312, 4, 6],
+        [313, 4, 6],
+        [314, 2, 4],
+        [315, 2, 4],
+        [318, 4, 6],
+        [319, 4, 6],
+        [320, 4, 6],
+        [321, 2, 4],
+        [322, 2, 4],
+        [326, 2, 1],
+        [327, 2, 1],
+        [328, 2, 1],
+        [329, 2, 1],
+        [330, 2, 1],
+        [331, 2, 1],
+        [332, 2, 1],
+        [333, 2, 1],
+        [334, 2, 1],
+        [335, 2, 1],
+        [340, 2, 4],
+        [341, 2, 0],
+        [344, 2, 4],
+        [345, 2, 0],
+        [348, 2, 4],
+        [349, 2, 0],
+        [355, 2, 0],
+        [357, 2, 4],
+        [361, 4, 6],
+        [362, 2, 4],
+        [363, 2, 4],
+        [368, 2, 0],
+        [370, 2, 4],
+        [374, 4, 6],
+        [376, 4, 2],
+        [383, 2, 0],
+        [385, 2, 4],
+        [390, 2, 0],
+        [392, 2, 4],
+        [409, 2, 0],
+        [410, 2, 4],
+        [416, 2, 0],
+        [417, 2, 4],
+        [422, 2, 4],
+        [423, 2, 0],
+        [427, 2, 6],
+        [428, 2, 8],
+        [429, 2, 4],
+        [430, 0, 4],
+        [433, 2, 4],
+        [434, 0, 4],
+        [437, 2, 0],
+        [438, 0, 4],
+        [451, 2, 0],
+        [453, 2, 4],
+        [499, 6, 8],
+        [500, 10, 8],
+        [501, 8, 6],
+        [506, 6, 8]
+      ])
+    }*/
   ]
 };
 

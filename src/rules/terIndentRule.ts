@@ -495,7 +495,6 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
-    console.log('MADE IT HERE: '.red, [indent, this.isOuterIIFE(calleeNode)]);
     if (OPTIONS.outerIIFEBody !== null && this.isOuterIIFE(calleeNode)) {
       functionOffset = OPTIONS.outerIIFEBody * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
@@ -504,7 +503,6 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
     indent += functionOffset;
-    console.log('indent, offset:'.blue, [indent, functionOffset]);
 
     // check if the node is inside a variable
     const parentVarNode = this.getVariableDeclaratorNode(node);
@@ -514,7 +512,6 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
       indent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 
-    console.log('node'.red, node.statements);
     if (node.statements.length > 0) {
       this.checkNodesIndent(node.statements, indent);
     }
@@ -929,11 +926,6 @@ console.log('checking first node indent');
     // }
 
     const propertyIndent = this.getNodeIndent(node).goodChar + indentSize * OPTIONS.MemberExpression;
-
-    console.log('checking node:', [node.dotToken.getText()]);
-    console.log('children:', node.getChildren().map(x => x.getText()))
-    console.log('name', [node.name.getText()]);
-    console.log('expression', [node.expression.getText()]);
     const checkNodes = [node.name, node.dotToken];
 
     // const dot = context.getTokenBefore(node.property);
