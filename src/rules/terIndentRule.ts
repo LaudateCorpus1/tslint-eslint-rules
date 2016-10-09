@@ -250,6 +250,9 @@ class IndentWalker extends Lint.RuleWalker {
     if (node.kind === ts.SyntaxKind.IfStatement && node['elseStatement']) {
       const elseKeyword = node.getChildren().filter(ch => ch.kind === ts.SyntaxKind.ElseKeyword).shift();
       this.checkNodeIndent(elseKeyword, neededIndent);
+      if (!this.isNodeFirstInLine(node['elseStatement'])) {
+        this.checkNodeIndent(node['elseStatement'], neededIndent);
+      }
     }
   }
 

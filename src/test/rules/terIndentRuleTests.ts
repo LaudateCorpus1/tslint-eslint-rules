@@ -665,7 +665,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       code: '\nBuffer\n  .foo\n  .bar',
       options: [2, { MemberExpression: 2 }],
       errors: expectedErrors([[2, 4, 2], [3, 4, 2]])
-    }, */
+    },
     {
       code: Lint.Utils.dedent`
         if (foo) bar();
@@ -673,6 +673,52 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
           else if (qux) qux();`,
       options: [2],
       errors: expectedErrors([[3, 0, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if (foo) bar();
+        else if (baz) foobar();
+          else qux();`,
+      options: [2],
+      errors: expectedErrors([[3, 0, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        foo();
+          if (baz) foobar();
+          else qux();`,
+      options: [2],
+      errors: expectedErrors([[2, 0, 2], [3, 0, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if (foo) bar();
+        else if (baz) foobar();
+             else if (bip) {
+               qux();
+             }`,
+      options: [2],
+      errors: expectedErrors([[3, 0, 5]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if (foo) bar();
+        else if (baz) {
+            foobar();
+             } else if (boop) {
+               qux();
+             }`,
+      options: [2],
+      errors: expectedErrors([[3, 2, 4], [4, 0, 5]])
+    }, */
+    {
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+            bbb, ccc, ddd) {
+              bar();
+        }`,
+      options: [2, { FunctionDeclaration: { parameters: 1, body: 2 } }],
+      errors: expectedErrors([[2, 2, 4], [3, 4, 6]])
     },
   ]
 };
