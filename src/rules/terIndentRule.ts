@@ -7,7 +7,7 @@ const DEFAULT_PARAMETER_INDENT = null;
 const DEFAULT_FUNCTION_BODY_INDENT = 1;
 let indentType = 'space';
 let indentSize = 4;
-const OPTIONS: any = {};
+let OPTIONS: any;
 
 export class Rule extends Lint.Rules.AbstractRule {
   public static metadata: Lint.IRuleMetadata = {
@@ -181,7 +181,6 @@ class IndentWalker extends Lint.RuleWalker {
   private report(node: ts.Node, needed, gottenSpaces, gottenTabs) {
     const msg = this.createErrorMessage(needed, gottenSpaces, gottenTabs);
     const width = gottenSpaces + gottenTabs;
-    console.log(`${msg} in ${[node.getText()]}`.yellow);
     this.addFailure(this.createFailure(node.getStart() - width, width, msg));
   }
 
@@ -304,14 +303,11 @@ class IndentWalker extends Lint.RuleWalker {
     } else {
       indent = this.getNodeIndent(node).goodChar;
     }
-    console.log('indent:', indent);
-
 
     if (node.kind === ts.SyntaxKind.IfStatement && node['thenStatement'].kind !== ts.SyntaxKind.Block) {
       nodesToCheck = [node['thenStatement']];
     } else {
       if (node.kind === ts.SyntaxKind.Block) {
-        console.log('1');
         nodesToCheck = node.getChildren()[1].getChildren();
       } else if (
         node.parent.kind === ts.SyntaxKind.ClassDeclaration ||
@@ -322,7 +318,6 @@ class IndentWalker extends Lint.RuleWalker {
         nodesToCheck = [node.statement];
       }
     }
-console.log('here:', nodesToCheck);
     this.checkNodeIndent(node, indent);
 
     if (nodesToCheck.length > 0) {
@@ -330,7 +325,6 @@ console.log('here:', nodesToCheck);
     }
 
     if (node.kind === ts.SyntaxKind.Block) {
-      console.log('CHECKING THIS'.america, [node.getFullText(), indent]);
       this.checkLastNodeLineIndent(node, indent);
     }
   }
@@ -345,7 +339,6 @@ console.log('here:', nodesToCheck);
    * @returns {boolean} True if it or its body is a block statement
    */
   private isNodeBodyBlock(node) {
-    console.log('checking node:', ts.SyntaxKind[node.kind]);
     return node.kind === ts.SyntaxKind.Block ||
       (node.kind === ts.SyntaxKind.SyntaxList && this.isClassLike(node.parent.kind));
     // return node.type === "BlockStatement" || node.type === "ClassBody" || (node.body && node.body.type === "BlockStatement") ||
@@ -379,9 +372,7 @@ console.log('here:', nodesToCheck);
    */
   private checkLastNodeLineIndent(node, lastLineIndent) {
     const lastToken = node.getLastToken();
-    console.log('getting indent of last token...');
     const endIndent = this.getNodeIndent(lastToken, true);
-    console.log('endIndent of last token:', endIndent, [lastToken.getText(), lastLineIndent]);
     const firstInLine = endIndent.firstInLine;
     if (firstInLine && (endIndent.goodChar !== lastLineIndent || endIndent.badChar !== 0)) {
       this.report(
@@ -399,25 +390,20 @@ console.log('here:', nodesToCheck);
    * @returns {boolean} True if the node is the outer IIFE
    */
   private isOuterIIFE(node) {
-    // console.log('node:'.blue, [node.getText()]);
     let parent = node.parent;
     if (parent.kind === ts.SyntaxKind.ParenthesizedExpression) {
       parent = parent.parent;
     }
     let stmt = parent.parent;
-    // console.log('here'.blue, [parent.getText(), stmt.getText()]);
-    // console.log('parent:', ts.SyntaxKind[parent.kind], [parent.getText(), parent.expression.getText()]);
     /*
    * Verify that the node is an IIEF
    */
-    console.log('parent:', ts.SyntaxKind[node.parent.kind]);
     if (parent.kind !== ts.SyntaxKind.CallExpression ){//|| parent.expression !== node) {
       return false;
     }
     /*
    * Navigate legal ancestors to determine whether this IIEF is outer
    */
-    // console.log('-===>'.red, stmt);
     while (
       stmt.kind === "UnaryExpression" && (
         stmt.operator === "!" ||
@@ -433,7 +419,7 @@ console.log('here:', nodesToCheck);
     ) {
       stmt = stmt.parent;
     }
-console.log('STMT:', ts.SyntaxKind[stmt.kind]);
+
     return ((
       stmt.kind === ts.SyntaxKind.ExpressionStatement ||
       stmt.kind === ts.SyntaxKind.VariableStatement) &&
@@ -462,7 +448,6 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
    * Looks for 'Models'
    */
     const calleeNode = node.parent; // FunctionExpression
-    console.log('calleeNode:', [calleeNode.getText()]);
 
     let indent;
 
@@ -527,10 +512,7 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
    * @returns {void}
    */
   protected checkNodesIndent(nodes: ts.Node[], indent: number) {
-    nodes.forEach(node => {
-      console.log('checking for:', [indent, node.getText()]);
-      this.checkNodeIndent(node, indent);
-    });
+    nodes.forEach(node => this.checkNodeIndent(node, indent));
   }
 
   /**
@@ -625,7 +607,6 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
     const file = node.getSourceFile();
     const nodeLine = file.getLineAndCharacterOfPosition(node.getStart()).line;
     const nodeEndLine = file.getLineAndCharacterOfPosition(node.getEnd()).line;
-    console.log('===>', elements);
 
     // Skip if first element is in same line with this node
     if (elements.length) {
@@ -651,18 +632,14 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
           effectiveParent = parent.parent;
         }
       }
-      console.log('effectiveParent:', [ts.SyntaxKind[effectiveParent.kind], effectiveParent.getText()]);
 
       nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
       const parentVarNodeLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
       if (parentVarNode && parentVarNodeLine !== nodeLine) {
-        console.log('1');
         if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
-          console.log('2');
           const parentVarLine = file.getLineAndCharacterOfPosition(parentVarNode.getStart()).line;
           const effectiveParentLine = file.getLineAndCharacterOfPosition(effectiveParent.getStart()).line;
           if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarLine === effectiveParentLine) {
-            console.log('3');
             varKind = parentVarNode.parent.getFirstToken().getText();
             nodeIndent = nodeIndent + (indentSize * OPTIONS.VariableDeclarator[varKind]);
           } else if (
@@ -673,20 +650,16 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
             parent.kind === ts.SyntaxKind.NewExpression ||
             parent.kind === ts.SyntaxKind.BinaryExpression
           ) {
-            console.log('4');
             nodeIndent = nodeIndent + indentSize;
           }
         }
       } else if (!parentVarNode && !isFirstArrayElementOnSameLine(parent) && effectiveParent.type !== "MemberExpression" && effectiveParent.type !== "ExpressionStatement" && effectiveParent.type !== "AssignmentExpression" && effectiveParent.type !== "Property") {
-        console.log('5');
         nodeIndent = nodeIndent + indentSize;
       }
 
       elementsIndent = nodeIndent + indentSize;
-console.log('checking first node indent');
       this.checkFirstNodeLineIndent(node, nodeIndent);
     } else {
-      console.log('Nope...'.red);
       nodeIndent = this.getNodeIndent(node).goodChar;
       elementsIndent = nodeIndent + indentSize;
     }
@@ -697,7 +670,6 @@ console.log('checking first node indent');
        */
     if (this.isNodeInVarOnTop(node, parentVarNode)) {
       varKind = parentVarNode.parent.getFirstToken().getText();
-      console.log('varKind', [varKind]);
       elementsIndent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 

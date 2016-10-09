@@ -7,7 +7,6 @@ import { runTest, IScripts, IScriptError } from './helper';
 const fixture = fs.readFileSync(
   path.join(__dirname, '../../../src/test/fixtures/indent-invalid.txt'), 'utf8'
 );
-console.log('FIXTURE:', fixture);
 type NumStr = number | string;
 
 function expectedErrors(errors: [[number, NumStr, NumStr]], indentType: string = 'space'): IScriptError[] {
