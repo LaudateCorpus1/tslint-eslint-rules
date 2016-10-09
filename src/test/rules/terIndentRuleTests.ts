@@ -29,7 +29,7 @@ function expectedErrors(errors: [[number, NumStr, NumStr]], indentType: string =
  */
 const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
-  valid: [ /*
+  valid: [
     {
       code:
       "bridge.callHandler(\n" +
@@ -79,7 +79,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "   );\n" +
       "}\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -100,7 +99,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "        return 100 * x;\n" +
       "    });\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -867,7 +865,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    };\n",
       options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}],
       parserOptions: { ecmaVersion: 6 }
-    }, */
+    },
     {
       code:
       "module.exports =\n" +
@@ -889,64 +887,371 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "};",
       options: [2]
     },
+    {
+      code:
+      "var path     = require('path')\n" +
+      "  , crypto    = require('crypto')\n" +
+      "  ;\n",
+      options: [2]
+    },
+    {
+      code:
+      "var a = 1\n" +
+      "   ,b = 2\n" +
+      "   ;"
+    },
+    {
+      code:
+      "export function create (some,\n" +
+      "                        argument) {\n" +
+      "  return Object.create({\n" +
+      "    a: some,\n" +
+      "    b: argument\n" +
+      "  });\n" +
+      "};",
+      parserOptions: { sourceType: "module" },
+      options: [2]
+    },
+    {
+      code:
+      "export function create (id, xfilter, rawType,\n" +
+      "                        width=defaultWidth, height=defaultHeight,\n" +
+      "                        footerHeight=defaultFooterHeight,\n" +
+      "                        padding=defaultPadding) {\n" +
+      "  // ... function body, indented two spaces\n" +
+      "}\n",
+      parserOptions: { sourceType: "module" },
+      options: [2]
+    },
+    {
+      code:
+      "var obj = {\n" +
+      "  foo: function () {\n" +
+      "    return new p()\n" +
+      "      .then(function (ok) {\n" +
+      "        return ok;\n" +
+      "      }, function () {\n" +
+      "        // ignore things\n" +
+      "      });\n" +
+      "  }\n" +
+      "};\n",
+      options: [2]
+    },
+    {
+      code:
+      "a.b()\n" +
+      "  .c(function(){\n" +
+      "    var a;\n" +
+      "  }).d.e;\n",
+      options: [2]
+    },
+    {
+      code:
+      "const YO = 'bah',\n" +
+      "      TE = 'mah'\n" +
+      "\n" +
+      "var res,\n" +
+      "    a = 5,\n" +
+      "    b = 4\n",
+      parserOptions: { ecmaVersion: 6 },
+      options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
+    },
+    {
+      code:
+      "const YO = 'bah',\n" +
+      "      TE = 'mah'\n" +
+      "\n" +
+      "var res,\n" +
+      "    a = 5,\n" +
+      "    b = 4\n" +
+      "\n" +
+      "if (YO) console.log(TE)",
+      parserOptions: { ecmaVersion: 6 },
+      options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
+    },
+    {
+      code:
+      "var foo = 'foo',\n" +
+      "  bar = 'bar',\n" +
+      "  baz = function() {\n" +
+      "      \n" +
+      "  }\n" +
+      "\n" +
+      "function hello () {\n" +
+      "    \n" +
+      "}\n",
+      options: [2]
+    },
+    {
+      code:
+      "var obj = {\n" +
+      "  send: function () {\n" +
+      "    return P.resolve({\n" +
+      "      type: 'POST'\n" +
+      "    })\n" +
+      "      .then(function () {\n" +
+      "        return true;\n" +
+      "      }, function () {\n" +
+      "        return false;\n" +
+      "      });\n" +
+      "  }\n" +
+      "};\n",
+      options: [2]
+    },
+    {
+      code:
+      "var obj = {\n" +
+      "  send: function () {\n" +
+      "    return P.resolve({\n" +
+      "      type: 'POST'\n" +
+      "    })\n" +
+      "    .then(function () {\n" +
+      "      return true;\n" +
+      "    }, function () {\n" +
+      "      return false;\n" +
+      "    });\n" +
+      "  }\n" +
+      "};\n",
+      options: [2, {MemberExpression: 0}]
+    },
+    {
+      code:
+      "const someOtherFunction = argument => {\n" +
+      "        console.log(argument);\n" +
+      "    },\n" +
+      "    someOtherValue = 'someOtherValue';\n",
+    },
+    {
+      code:
+      "[\n" +
+      "  'a',\n" +
+      "  'b'\n" +
+      "].sort().should.deepEqual([\n" +
+      "  'x',\n" +
+      "  'y'\n" +
+      "]);\n",
+      options: [2]
+    },
+    {
+      code:
+      "var a = 1,\n" +
+      "    B = class {\n" +
+      "      constructor(){}\n" +
+      "      a(){}\n" +
+      "      get b(){}\n" +
+      "    };",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "var a = 1,\n" +
+      "    B = \n" +
+      "    class {\n" +
+      "      constructor(){}\n" +
+      "      a(){}\n" +
+      "      get b(){}\n" +
+      "    },\n" +
+      "    c = 3;",
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "class A{\n" +
+      "    constructor(){}\n" +
+      "    a(){}\n" +
+      "    get b(){}\n" +
+      "}",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "var A = class {\n" +
+      "    constructor(){}\n" +
+      "    a(){}\n" +
+      "    get b(){}\n" +
+      "}",
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "var a = {\n" +
+      "  some: 1\n" +
+      ", name: 2\n" +
+      "};\n",
+      options: [2]
+    },
+    {
+      code:
+      "a.c = {\n" +
+      "    aa: function() {\n" +
+      "        'test1';\n" +
+      "        return 'aa';\n" +
+      "    }\n" +
+      "    , bb: function() {\n" +
+      "        return this.bb();\n" +
+      "    }\n" +
+      "};\n",
+      options: [4]
+    },
+    {
+      code:
+      "var a =\n" +
+      "{\n" +
+      "    actions:\n" +
+      "    [\n" +
+      "        {\n" +
+      "            name: 'compile'\n" +
+      "        }\n" +
+      "    ]\n" +
+      "};\n",
+      options: [4, {VariableDeclarator: 0, SwitchCase: 1}]
+    },
+    {
+      code:
+      "var a =\n" +
+      "[\n" +
+      "    {\n" +
+      "        name: 'compile'\n" +
+      "    }\n" +
+      "];\n",
+      options: [4, {VariableDeclarator: 0, SwitchCase: 1}]
+    },
+    {
+      code:
+      "const func = function (opts) {\n" +
+      "    return Promise.resolve()\n" +
+      "    .then(() => {\n" +
+      "        [\n" +
+      "            'ONE', 'TWO'\n" +
+      "        ].forEach(command => { doSomething(); });\n" +
+      "    });\n" +
+      "};",
+      parserOptions: { ecmaVersion: 6 },
+      options: [4, {MemberExpression: 0}]
+    },
+    {
+      code:
+      "const func = function (opts) {\n" +
+      "    return Promise.resolve()\n" +
+      "        .then(() => {\n" +
+      "            [\n" +
+      "                'ONE', 'TWO'\n" +
+      "            ].forEach(command => { doSomething(); });\n" +
+      "        });\n" +
+      "};",
+      parserOptions: { ecmaVersion: 6 },
+      options: [4]
+    },
+    {
+      code:
+      "var haveFun = function () {\n" +
+      "    SillyFunction(\n" +
+      "        {\n" +
+      "            value: true,\n" +
+      "        },\n" +
+      "        {\n" +
+      "            _id: true,\n" +
+      "        }\n" +
+      "    );\n" +
+      "};",
+      options: [4]
+    },
+    {
+      code:
+      "var haveFun = function () {\n" +
+      "    new SillyFunction(\n" +
+      "        {\n" +
+      "            value: true,\n" +
+      "        },\n" +
+      "        {\n" +
+      "            _id: true,\n" +
+      "        }\n" +
+      "    );\n" +
+      "};",
+      options: [4]
+    },
+    {
+      code:
+      "let object1 = {\n" +
+      "  doThing() {\n" +
+      "    return _.chain([])\n" +
+      "      .map(v => (\n" +
+      "        {\n" +
+      "          value: true,\n" +
+      "        }\n" +
+      "      ))\n" +
+      "      .value();\n" +
+      "  }\n" +
+      "};",
+      parserOptions: { ecmaVersion: 6 },
+      options: [2]
+    },
+    {
+      code:
+      "class Foo\n" +
+      "  extends Bar {\n" +
+      "  baz() {}\n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+      "class Foo extends\n" +
+      "  Bar {\n" +
+      "  baz() {}\n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+      "fs.readdirSync(path.join(__dirname, '../rules')).forEach(name => {\n" +
+      "  files[name] = foo;\n" +
+      "});",
+      options: [2, { outerIIFEBody: 0 }],
+    },
     // {
     //   code:
-    //   "var path     = require('path')\n" +
-    //   "  , crypto    = require('crypto')\n" +
-    //   "  ;\n",
-    //   options: [2]
+    //   "(function(){\n" +
+    //   "function foo(x) {\n" +
+    //   "  return x + 1;\n" +
+    //   "}\n" +
+    //   "})();",
+    //   options: [2, { outerIIFEBody: 0 }]
     // },
     // {
     //   code:
-    //   "var a = 1\n" +
-    //   "   ,b = 2\n" +
-    //   "   ;"
+    //   "(function(){\n" +
+    //   "        function foo(x) {\n" +
+    //   "            return x + 1;\n" +
+    //   "        }\n" +
+    //   "})();",
+    //   options: [4, { outerIIFEBody: 2 }]
     // },
     // {
     //   code:
-    //   "export function create (some,\n" +
-    //   "                        argument) {\n" +
-    //   "  return Object.create({\n" +
-    //   "    a: some,\n" +
-    //   "    b: argument\n" +
-    //   "  });\n" +
-    //   "};",
-    //   parserOptions: { sourceType: "module" },
-    //   options: [2]
+    //   "(function(x, y){\n" +
+    //   "function foo(x) {\n" +
+    //   "  return x + 1;\n" +
+    //   "}\n" +
+    //   "})(1, 2);",
+    //   options: [2, { outerIIFEBody: 0 }]
     // },
     // {
     //   code:
-    //   "export function create (id, xfilter, rawType,\n" +
-    //   "                        width=defaultWidth, height=defaultHeight,\n" +
-    //   "                        footerHeight=defaultFooterHeight,\n" +
-    //   "                        padding=defaultPadding) {\n" +
-    //   "  // ... function body, indented two spaces\n" +
-    //   "}\n",
-    //   parserOptions: { sourceType: "module" },
-    //   options: [2]
+    //   "(function(){\n" +
+    //   "function foo(x) {\n" +
+    //   "  return x + 1;\n" +
+    //   "}\n" +
+    //   "}());",
+    //   options: [2, { outerIIFEBody: 0 }]
     // },
-    // {
-    //   code:
-    //   "var obj = {\n" +
-    //   "  foo: function () {\n" +
-    //   "    return new p()\n" +
-    //   "      .then(function (ok) {\n" +
-    //   "        return ok;\n" +
-    //   "      }, function () {\n" +
-    //   "        // ignore things\n" +
-    //   "      });\n" +
-    //   "  }\n" +
-    //   "};\n",
-    //   options: [2]
-    // },
-    // {
-    //   code:
-    //   "a.b()\n" +
-    //   "  .c(function(){\n" +
-    //   "    var a;\n" +
-    //   "  }).d.e;\n",
-    //   options: [2]
-    // },
+
+
+
 
   ],
   invalid: [

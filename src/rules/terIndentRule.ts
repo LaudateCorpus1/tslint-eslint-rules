@@ -104,7 +104,7 @@ class IndentWalker extends Lint.RuleWalker {
       indentSize = 1;
       indentType = 'tab';
     } else {
-      indentSize = firstParam || indentSize;
+      indentSize = firstParam || 4;
       indentType = 'space';
     }
     const userOptions = this.getOptions()[1];
@@ -188,6 +188,7 @@ class IndentWalker extends Lint.RuleWalker {
   private report(node: ts.Node, needed, gottenSpaces, gottenTabs) {
     const msg = this.createErrorMessage(needed, gottenSpaces, gottenTabs);
     const width = gottenSpaces + gottenTabs;
+    console.log('node:', [node.getText()]);
     this.addFailure(this.createFailure(node.getStart() - width, width, msg));
   }
 
@@ -405,7 +406,8 @@ class IndentWalker extends Lint.RuleWalker {
     /*
    * Verify that the node is an IIEF
    */
-    if (parent.kind !== ts.SyntaxKind.CallExpression ){//|| parent.expression !== node) {
+    console.log('PARENT:', [ts.SyntaxKind[parent.kind], parent.expression !== node]);
+    if (parent.kind !== ts.SyntaxKind.CallExpression || parent.expression !== node) {
       return false;
     }
     /*
@@ -488,6 +490,7 @@ class IndentWalker extends Lint.RuleWalker {
 
     if (calleeNode.parent.kind === ts.SyntaxKind.CallExpression) {
       const calleeParent = calleeNode.parent;
+      console.log('in here'.blue);
 
       if (calleeNode.kind !== ts.SyntaxKind.FunctionExpression && calleeNode.kind !== ts.SyntaxKind.ArrowFunction) {
         if (calleeParent && this.getLineAndCharacter(calleeParent).line < this.getLineAndCharacter(node).line) {
@@ -498,22 +501,26 @@ class IndentWalker extends Lint.RuleWalker {
         if (
           this.isArgBeforeCalleeNodeMultiline(calleeNode) &&
           this.getLineAndCharacter(callee).line === this.getLineAndCharacter(callee, true).line &&
-          !this.isNodeFirstInLine(calleeNode)) {
-          console.log('getting here...');
+          !this.isNodeFirstInLine(calleeNode)
+        ) {
           indent = this.getNodeIndent(calleeParent).goodChar;
         }
       }
     }
+    console.log('indent'.blue, [indent]);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
+    console.log('offset', [functionOffset]);
     if (OPTIONS.outerIIFEBody !== null && this.isOuterIIFE(calleeNode)) {
+      console.log('here?');
       functionOffset = OPTIONS.outerIIFEBody * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
       functionOffset = OPTIONS.FunctionExpression.body * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionDeclaration) {
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
+    console.log('offset', [functionOffset]);
     indent += functionOffset;
     console.log('indent'.red, [indent]);
 
@@ -689,8 +696,8 @@ class IndentWalker extends Lint.RuleWalker {
         !this.isFirstArrayElementOnSameLine(parent) &&
         effectiveParent.kind !== ts.SyntaxKind.PropertyAccessExpression &&
         effectiveParent.kind !== ts.SyntaxKind.ExpressionStatement &&
-        effectiveParent.kind !== ts.SyntaxKind.FirstAssignment &&
-        effectiveParent.kind !== ts.SyntaxKind.PropertyAssignment
+        effectiveParent.kind !== ts.SyntaxKind.PropertyAssignment &&
+        !(effectiveParent.kind === ts.SyntaxKind.BinaryExpression && effectiveParent.operatorToken.getText() === '=')
       ) {
         nodeIndent = nodeIndent + indentSize;
       }
@@ -745,10 +752,6 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {boolean} True if all the above condition satisfy
    */
   protected isNodeInVarOnTop(node: ts.Node, varNode) {
-
-    console.log('node:', [node.getText()]);
-    console.log('parentVarNode:', [varNode.getText()]);
-
     const nodeLine = this.getLineAndCharacter(node).line;
     const parentLine = this.getLineAndCharacter(varNode.parent).line;
     return varNode &&
