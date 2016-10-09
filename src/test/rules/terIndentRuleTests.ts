@@ -29,7 +29,157 @@ function expectedErrors(errors: [[number, NumStr, NumStr]], indentType: string =
  */
 const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
-  valid: [
+  valid: [/*
+    {
+      code:
+      "bridge.callHandler(\n" +
+      "  'getAppVersion', 'test23', function(responseData) {\n" +
+      "    window.ah.mobileAppVersion = responseData;\n" +
+      "  }\n" +
+      ");\n",
+      options: [2]
+    },
+    {
+      code:
+      "bridge.callHandler(\n" +
+      "  'getAppVersion', 'test23', function(responseData) {\n" +
+      "    window.ah.mobileAppVersion = responseData;\n" +
+      "  });\n",
+      options: [2]
+    },
+    {
+      code:
+      "bridge.callHandler(\n" +
+      "  'getAppVersion',\n" +
+      "  null,\n" +
+      "  function responseCallback(responseData) {\n" +
+      "    window.ah.mobileAppVersion = responseData;\n" +
+      "  }\n" +
+      ");\n",
+      options: [2]
+    },
+    {
+      code:
+      "bridge.callHandler(\n" +
+      "  'getAppVersion',\n" +
+      "  null,\n" +
+      "  function responseCallback(responseData) {\n" +
+      "    window.ah.mobileAppVersion = responseData;\n" +
+      "  });\n",
+      options: [2]
+    },
+    {
+      code:
+      "function doStuff(keys) {\n" +
+      "    _.forEach(\n" +
+      "        keys,\n" +
+      "        key => {\n" +
+      "            doSomething(key);\n" +
+      "        }\n" +
+      "   );\n" +
+      "}\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "example(\n" +
+      "    function () {\n" +
+      "        console.log('example');\n" +
+      "    }\n" +
+      ");\n",
+      options: [4]
+    },
+    {
+      code:
+      "let foo = somethingList\n" +
+      "    .filter(x => {\n" +
+      "        return x;\n" +
+      "    })\n" +
+      "    .map(x => {\n" +
+      "        return 100 * x;\n" +
+      "    });\n",
+      options: [4],
+      parserOptions: { ecmaVersion: 6 }
+    },
+    {
+      code:
+      "var x = 0 &&\n" +
+      "    {\n" +
+      "        a: 1,\n" +
+      "        b: 2\n" +
+      "    };",
+      options: [4]
+    },
+    {
+      code:
+      "var x = 0 &&\n" +
+      "\t{\n" +
+      "\t\ta: 1,\n" +
+      "\t\tb: 2\n" +
+      "\t};",
+      options: ["tab"]
+    },
+    {
+      code:
+      "var x = 0 &&\n" +
+      "    {\n" +
+      "        a: 1,\n" +
+      "        b: 2\n" +
+      "    }||\n" +
+      "    {\n" +
+      "        c: 3,\n" +
+      "        d: 4\n" +
+      "    };",
+      options: [4]
+    },
+    {
+      code:
+        "var x = 0 && 1;",
+      options: [4]
+    },
+    {
+      code:
+        "var x = 0 && { a: 1, b: 2 };",
+      options: [4]
+    },
+    {
+      code:
+      "var x = 0 &&\n" +
+      "    (\n" +
+      "        1\n" +
+      "    );",
+      options: [4]
+    },
+    {
+      code:
+        "var x = 0 && { a: 1, b: 2 };",
+      options: [4]
+    }, */
+    {
+      code:
+      "require('http').request({hostname: 'localhost',\n" +
+      "                         port: 80}, function(res) {\n" +
+      "  res.end();\n" +
+      "});\n",
+      options: [2]
+    },
+    // {
+    //   code:
+    //   "function test() {\n" +
+    //   "  return client.signUp(email, PASSWORD, { preVerified: true })\n" +
+    //   "    .then(function (result) {\n" +
+    //   "      // hi\n" +
+    //   "    })\n" +
+    //   "    .then(function () {\n" +
+    //   "      return FunctionalHelpers.clearBrowserState(self, {\n" +
+    //   "        contentServer: true,\n" +
+    //   "        contentServer1: true\n" +
+    //   "      });\n" +
+    //   "    });\n" +
+    //   "}",
+    //   options: [2]
+    // },
   ],
   invalid: [
     {

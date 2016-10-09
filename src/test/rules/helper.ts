@@ -60,9 +60,13 @@ export function runScript(rule: string, scriptText: string, config: Object, erro
   const result = linter.lint();
 
   const failures = JSON.parse(result.output);
+  const line = errors[0] ? 'line' in errors[0] : false;
 
   if (failures.length !== errors.length) {
-    const errorMsgs = failures.map(x => `- ${x.failure}\n`).join('     ');
+    const errorMsgs = failures.map((x) => {
+      const start = `(${x.startPosition.line})`;
+      return `${start} ${x.failure}\n`;
+    });
     const msg = `Expected ${errors.length} error(s) in:
 
      -------
@@ -71,11 +75,10 @@ export function runScript(rule: string, scriptText: string, config: Object, erro
      
      Found ${failures.length} errors(s):
 
-     ${errorMsgs}
+       ${errorMsgs.join('       ')}
     `;
     assert.fail(failures.length, errors.length, msg);
   } else {
-    const line = errors[0] ? 'line' in errors[0] : false;
     const expectedErrorMsgs = errors.map((x) => {
       const start = line ? `(${x.line})` : '-';
       return `${start} ${x.message}\n`;
