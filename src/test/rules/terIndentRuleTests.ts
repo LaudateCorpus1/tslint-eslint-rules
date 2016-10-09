@@ -710,7 +710,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
              }`,
       options: [2],
       errors: expectedErrors([[3, 2, 4], [4, 0, 5]])
-    }, */
+    },
     {
       code: Lint.Utils.dedent`
         function foo(aaa,
@@ -823,7 +823,48 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       code: '\nfunction foo() {\n\tbar();\n  baz();\n              qux();\n}',
       options: ['tab'],
       errors: expectedErrors([[3, '1 tab', '2 spaces'], [4, '1 tab', '14 spaces']], 'tab')
+    }, */
+    {
+      code: [
+        '\nfunction foo() {',
+        '  bar();',
+        '\t\t}'
+      ].join('\n'),
+      options: [2],
+      errors: expectedErrors([[3, '0 spaces', '2 tabs']])
     },
+    {
+      code: Lint.Utils.dedent`
+        function foo() {
+          function bar() {
+                baz();
+          }
+        }`,
+      options: [2, { FunctionDeclaration: { body: 1 } }],
+      errors: expectedErrors([[3, 4, 8]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo() {
+          function bar(baz,
+            qux) {
+            foobar();
+          }
+        }`,
+      options: [2, { FunctionDeclaration: { body: 1, parameters: 2 } }],
+      errors: expectedErrors([[3, 6, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo() {
+          var bar = function(baz,
+                  qux) {
+            foobar();
+          };
+        }`,
+      options: [2, { FunctionExpression: { parameters: 3 } }],
+      errors: expectedErrors([[3, 8, 10]])
+    }
   ]
 };
 
