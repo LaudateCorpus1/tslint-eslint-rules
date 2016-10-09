@@ -399,6 +399,7 @@ class IndentWalker extends Lint.RuleWalker {
    */
   private isOuterIIFE(node) {
     let parent = node.parent;
+    let expressionIsNode = parent.expression !== node;
     if (parent.kind === ts.SyntaxKind.ParenthesizedExpression) {
       parent = parent.parent;
     }
@@ -406,8 +407,9 @@ class IndentWalker extends Lint.RuleWalker {
     /*
    * Verify that the node is an IIEF
    */
-    console.log('PARENT:', [ts.SyntaxKind[parent.kind], parent.expression !== node]);
-    if (parent.kind !== ts.SyntaxKind.CallExpression || parent.expression !== node) {
+    console.log('PARENT:', [ts.SyntaxKind[parent.kind], expressionIsNode]);
+    if (parent.kind !== ts.SyntaxKind.CallExpression || expressionIsNode) {
+      console.log('its not');
       return false;
     }
     /*

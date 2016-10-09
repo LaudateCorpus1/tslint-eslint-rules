@@ -2202,8 +2202,8 @@ describe(rule, () => {
     runTest(rule, scripts.valid);
   });
 
-  // it('should fail when using wrong indentation', () => {
-  //   runTest(rule, scripts.invalid);
-  // });
+  it('should fail when using wrong indentation', () => {
+    runTest(rule, scripts.invalid);
+  });
 
 });
