@@ -495,16 +495,16 @@ console.log('STMT:', ts.SyntaxKind[stmt.kind]);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
-console.log('MADE IT HERE: '.red, [indent, this.isOuterIIFE(calleeNode)]);
+    console.log('MADE IT HERE: '.red, [indent, this.isOuterIIFE(calleeNode)]);
     if (OPTIONS.outerIIFEBody !== null && this.isOuterIIFE(calleeNode)) {
       functionOffset = OPTIONS.outerIIFEBody * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
       functionOffset = OPTIONS.FunctionExpression.body * indentSize;
-    } else if (calleeNode.type === ts.SyntaxKind.FunctionDeclaration) {
+    } else if (calleeNode.kind === ts.SyntaxKind.FunctionDeclaration) {
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
     indent += functionOffset;
-console.log('indent, offset:', [indent, functionOffset]);
+    console.log('indent, offset:'.blue, [indent, functionOffset]);
 
     // check if the node is inside a variable
     const parentVarNode = this.getVariableDeclaratorNode(node);
@@ -876,6 +876,17 @@ console.log('checking first node indent');
     if (this.isSingleLineNode(node)) {
       return;
     }
+    if (OPTIONS.FunctionDeclaration.parameters === 'first' && node.parameters.length) {
+      const firstParamIndex = node.parameters[0].getStart();
+      const indent = node.getSourceFile().getLineAndCharacterOfPosition(firstParamIndex).character;
+      this.checkNodesIndent(node.parameters.slice(1), indent);
+    } else if (OPTIONS.FunctionDeclaration.parameters !== null) {
+      this.checkNodesIndent(
+        node.parameters,
+        this.getNodeIndent(node).goodChar + indentSize * OPTIONS.FunctionDeclaration.parameters
+      );
+    }
+
     super.visitFunctionDeclaration(node);
   }
 
@@ -883,17 +894,17 @@ console.log('checking first node indent');
     if (this.isSingleLineNode(node)) {
       return;
     }
-    console.log('node:', node);
-    if (OPTIONS.FunctionExpression.parameters === 'first' && node.params.length) {
-      this.checkNodesIndent(node.params.slice(1), node.params[0].loc.start.column);
+    if (OPTIONS.FunctionExpression.parameters === 'first' && node.parameters.length) {
+      const firstParamIndex = node.parameters[0].getStart();
+      const indent = node.getSourceFile().getLineAndCharacterOfPosition(firstParamIndex).character;
+      this.checkNodesIndent(node.parameters.slice(1), indent);
     } else if (OPTIONS.FunctionExpression.parameters !== null) {
-      this.checkNodesIndent(node.params, getNodeIndent(node).goodChar + indentSize * options.FunctionExpression.parameters);
+      this.checkNodesIndent(
+        node.parameters,
+        this.getNodeIndent(node).goodChar + indentSize * OPTIONS.FunctionExpression.parameters
+      );
     }
     super.visitFunctionExpression(node);
-  }
-
-  protected visitParameterDeclaration(node: ts.ParameterDeclaration) {
-    console.log('param:', [node.getText()]);
   }
 
   protected visitPropertyAccessExpression(node: ts.PropertyAccessExpression) {

@@ -2,8 +2,8 @@
 import * as Lint from 'tslint/lib/lint';
 import { runTest, IScripts, IScriptError } from './helper';
 
-function expectedErrors(errors: number[][], indentType: string = 'space'): IScriptError[] {
-  return errors.map(function(err) {
+function expectedErrors(errors: (number|string)[][], indentType: string = 'space'): IScriptError[] {
+  return errors.map((err) => {
     let message;
 
     if (typeof err[1] === 'string' && typeof err[2] === 'string') {
@@ -719,6 +719,110 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         }`,
       options: [2, { FunctionDeclaration: { parameters: 1, body: 2 } }],
       errors: expectedErrors([[2, 2, 4], [3, 4, 6]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo(aaa, bbb,
+          ccc, ddd) {
+        bar();
+        }",
+        utput:
+        function foo(aaa, bbb,
+              ccc, ddd) {
+          bar();
+        }`,
+      options: [2, { FunctionDeclaration: { parameters: 3, body: 1 } }],
+      errors: expectedErrors([[2, 6, 2], [3, 2, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+                bbb,
+          ccc) {
+              bar();
+        }`,
+      options: [4, { FunctionDeclaration: { parameters: 1, body: 3 } }],
+      errors: expectedErrors([[2, 4, 8], [3, 4, 2], [4, 12, 6]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+          bbb, ccc,
+                           ddd, eee, fff) {
+           bar();
+        }`,
+      options: [2, { FunctionDeclaration: { parameters: 'first', body: 1 } }],
+      errors: expectedErrors([[2, 13, 2], [3, 13, 19], [4, 2, 3]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo(aaa, bbb)
+        {
+        bar();
+        }`,
+      options: [2, { FunctionDeclaration: { body: 3 } }],
+      errors: expectedErrors([[3, 6, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        function foo(
+        aaa,
+            bbb) {
+        bar();
+        }`,
+      options: [2, { FunctionDeclaration: { parameters: 'first', body: 2 } }],
+      errors: expectedErrors([[3, 0, 4], [4, 4, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+          bbb,
+            ccc,
+              ddd) {
+          bar();
+        }`,
+      options: [2, { FunctionExpression: { parameters: 2, body: 0 } }],
+      errors: expectedErrors([[2, 4, 2], [4, 4, 6], [5, 0, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+           bbb,
+         ccc) {
+          bar();
+        }`,
+      options: [2, { FunctionExpression: { parameters: 1, body: 10 }}],
+      errors: expectedErrors([[2, 2, 3], [3, 2, 1], [4, 20, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+          bbb, ccc, ddd,
+                                eee, fff) {
+                bar();
+        }`,
+      options: [4, { FunctionExpression: { parameters: 'first', body: 1 } }],
+      errors: expectedErrors([[2, 19, 2], [3, 19, 24], [4, 4, 8]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var foo = function(
+        aaa, bbb, ccc,
+            ddd, eee) {
+          bar();
+        }`,
+      options: [2, {FunctionExpression: { parameters: 'first', body: 3 } }],
+      errors: expectedErrors([[3, 0, 4], [4, 6, 2]])
+    },
+    {
+      code: '\nvar foo = bar;\n\t\t\tvar baz = qux;',
+      options: [2],
+      errors: expectedErrors([[2, '0 spaces', '3 tabs']])
+    },
+    {
+      code: '\nfunction foo() {\n\tbar();\n  baz();\n              qux();\n}',
+      options: ['tab'],
+      errors: expectedErrors([[3, '1 tab', '2 spaces'], [4, '1 tab', '14 spaces']], 'tab')
     },
   ]
 };
