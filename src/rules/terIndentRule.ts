@@ -274,7 +274,7 @@ class IndentWalker extends Lint.RuleWalker {
         node.parent.kind === ts.SyntaxKind.FunctionDeclaration ||
         node.parent.kind === ts.SyntaxKind.ArrowFunction
       )) {
-     this.checkIndentInFunctionBlock(node);
+      this.checkIndentInFunctionBlock(node);
       return;
     }
 
@@ -293,32 +293,34 @@ class IndentWalker extends Lint.RuleWalker {
       ts.SyntaxKind.ForOfStatement,
       ts.SyntaxKind.DoStatement,
       ts.SyntaxKind.ClassDeclaration,
+      ts.SyntaxKind.ClassExpression,
       ts.SyntaxKind.SourceFile
     ];
     if (node.parent && statementsWithProperties.indexOf(node.parent.kind) !== -1 && this.isNodeBodyBlock(node)) {
       indent = this.getNodeIndent(node.parent).goodChar;
-    }
-    else {
+    } else {
       indent = this.getNodeIndent(node).goodChar;
     }
+    console.log('indent:', indent);
 
 
     if (node.kind === ts.SyntaxKind.IfStatement && node['thenStatement'].kind !== ts.SyntaxKind.Block) {
       nodesToCheck = [node['thenStatement']];
     } else {
       if (node.kind === ts.SyntaxKind.Block) {
+        console.log('1');
         nodesToCheck = node.getChildren()[1].getChildren();
+      } else if (
+        node.parent.kind === ts.SyntaxKind.ClassDeclaration ||
+        node.parent.kind === ts.SyntaxKind.ClassExpression
+      ) {
+        nodesToCheck = node.getChildren();
       } else {
         nodesToCheck = [node.statement];
       }
-
-
     }
-
-
+console.log('here:', nodesToCheck);
     this.checkNodeIndent(node, indent);
-
-
 
     if (nodesToCheck.length > 0) {
       this.checkNodesIndent(nodesToCheck, indent + indentSize);
@@ -330,6 +332,10 @@ class IndentWalker extends Lint.RuleWalker {
     }
   }
 
+  private isClassLike(node) {
+    return node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ClassExpression;
+  }
+
   /**
    * Check if the node or node body is a BlockStatement or not
    * @param {ASTNode} node node to test
@@ -338,7 +344,7 @@ class IndentWalker extends Lint.RuleWalker {
   private isNodeBodyBlock(node) {
     console.log('checking node:', ts.SyntaxKind[node.kind]);
     return node.kind === ts.SyntaxKind.Block ||
-        node.kind === ts.SyntaxKind.ClassExpression;
+      (node.kind === ts.SyntaxKind.SyntaxList && this.isClassLike(node.parent.kind));
     // return node.type === "BlockStatement" || node.type === "ClassBody" || (node.body && node.body.type === "BlockStatement") ||
     //   (node.consequent && node.consequent.type === "BlockStatement");
   }
@@ -385,6 +391,54 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   /**
+   * Check to see if the node is a file level IIFE
+   * @param {ASTNode} node The function node to check.
+   * @returns {boolean} True if the node is the outer IIFE
+   */
+  private isOuterIIFE(node) {
+    // console.log('node:'.blue, [node.getText()]);
+    let parent = node.parent;
+    if (parent.kind === ts.SyntaxKind.ParenthesizedExpression) {
+      parent = parent.parent;
+    }
+    let stmt = parent.parent;
+    // console.log('here'.blue, [parent.getText(), stmt.getText()]);
+    // console.log('parent:', ts.SyntaxKind[parent.kind], [parent.getText(), parent.expression.getText()]);
+    /*
+   * Verify that the node is an IIEF
+   */
+    console.log('parent:', ts.SyntaxKind[node.parent.kind]);
+    if (parent.kind !== ts.SyntaxKind.CallExpression ){//|| parent.expression !== node) {
+      return false;
+    }
+    /*
+   * Navigate legal ancestors to determine whether this IIEF is outer
+   */
+    // console.log('-===>'.red, stmt);
+    while (
+      stmt.kind === "UnaryExpression" && (
+        stmt.operator === "!" ||
+        stmt.operator === "~" ||
+        stmt.operator === "+" ||
+        stmt.operator === "-"
+      ) ||
+      stmt.kind === ts.SyntaxKind.FirstAssignment ||
+      stmt.kind === ts.SyntaxKind.BinaryExpression ||
+      stmt.kind === ts.SyntaxKind.SyntaxList ||
+      stmt.kind === ts.SyntaxKind.VariableDeclaration ||
+      stmt.kind === ts.SyntaxKind.VariableDeclarationList
+    ) {
+      stmt = stmt.parent;
+    }
+console.log('STMT:', ts.SyntaxKind[stmt.kind]);
+    return ((
+      stmt.kind === ts.SyntaxKind.ExpressionStatement ||
+      stmt.kind === ts.SyntaxKind.VariableStatement) &&
+      stmt.parent && stmt.parent.kind === ts.SyntaxKind.SourceFile
+    );
+  }
+
+  /**
    * Check indent for function block content
    * @param {ASTNode} node A BlockStatement node that is inside of a function.
    * @returns {void}
@@ -405,11 +459,13 @@ class IndentWalker extends Lint.RuleWalker {
    * Looks for 'Models'
    */
     const calleeNode = node.parent; // FunctionExpression
+    console.log('calleeNode:', [calleeNode.getText()]);
+
     let indent;
 
     if (calleeNode.parent &&
-      (calleeNode.parent.type === "Property" ||
-      calleeNode.parent.type === "ArrayExpression")) {
+      (calleeNode.parent.kind === "Property" ||
+      calleeNode.parent.kind === "ArrayExpression")) {
 
       // If function is part of array or object, comma can be put at left
       indent = this.getNodeIndent(calleeNode).goodChar;
@@ -418,7 +474,6 @@ class IndentWalker extends Lint.RuleWalker {
       // If function is standalone, simple calculate indent
       indent = this.getNodeIndent(calleeNode).goodChar;
     }
-console.log('INDENT:', indent);
     if (calleeNode.parent.type === "CallExpression") {
       const calleeParent = calleeNode.parent;
 
@@ -434,20 +489,19 @@ console.log('INDENT:', indent);
         }
       }
     }
-    console.log('INDENT HERE:', indent);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
-
-    if (OPTIONS.outerIIFEBody !== null && isOuterIIFE(calleeNode)) {
-      functionOffset = options.outerIIFEBody * indentSize;
-    } else if (calleeNode.type === "FunctionExpression") {
-      functionOffset = options.FunctionExpression.body * indentSize;
-    } else if (calleeNode.type === "FunctionDeclaration") {
-      functionOffset = options.FunctionDeclaration.body * indentSize;
+console.log('MADE IT HERE: '.red, [indent, this.isOuterIIFE(calleeNode)]);
+    if (OPTIONS.outerIIFEBody !== null && this.isOuterIIFE(calleeNode)) {
+      functionOffset = OPTIONS.outerIIFEBody * indentSize;
+    } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
+      functionOffset = OPTIONS.FunctionExpression.body * indentSize;
+    } else if (calleeNode.type === ts.SyntaxKind.FunctionDeclaration) {
+      functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
-    console.log('FN OFFSET'.red, functionOffset);
     indent += functionOffset;
+console.log('indent, offset:', [indent, functionOffset]);
 
     // check if the node is inside a variable
     const parentVarNode = this.getVariableDeclaratorNode(node);
@@ -457,7 +511,7 @@ console.log('INDENT:', indent);
       indent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 
-    console.log('NODE:', node, indent);
+    console.log('node'.red, node.statements);
     if (node.statements.length > 0) {
       this.checkNodesIndent(node.statements, indent);
     }
@@ -474,6 +528,7 @@ console.log('INDENT:', indent);
    */
   protected checkNodesIndent(nodes: ts.Node[], indent: number) {
     nodes.forEach(node => {
+      console.log('checking for:', [indent, node.getText()]);
       this.checkNodeIndent(node, indent);
     });
   }
@@ -683,7 +738,6 @@ console.log('checking first node indent');
    */
   protected blockLessNodes(node) {
     if (node.statement.kind !== ts.SyntaxKind.Block) {
-      console.log('node:', [node.statement.getText()]);
       this.blockIndentationCheck(node);
     }
   }
@@ -691,6 +745,18 @@ console.log('checking first node indent');
   protected visitBinaryExpression(node: ts.BinaryExpression) {
     // this.validateUseIsnan(node);
     super.visitBinaryExpression(node);
+  }
+
+  protected visitClassDeclaration(node: ts.ClassDeclaration) {
+    const len = node.getChildCount();
+    this.blockIndentationCheck(node.getChildAt(len - 2));
+    super.visitClassDeclaration(node);
+  }
+
+  protected visitClassExpression(node: ts.ClassExpression) {
+    const len = node.getChildCount();
+    this.blockIndentationCheck(node.getChildAt(len - 2));
+    super.visitClassExpression(node);
   }
 
   protected visitBlock(node: ts.Block) {
@@ -801,6 +867,69 @@ console.log('checking first node indent');
     } else {
       this.checkLastNodeLineIndent(node, elementsIndent - indentSize);
     }
+  }
+
+  protected visitFunctionDeclaration(node: ts.FunctionDeclaration) {
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+    super.visitFunctionDeclaration(node);
+  }
+
+  protected visitFunctionExpression(node: ts.FunctionExpression) {
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+    console.log('node:', node);
+    if (OPTIONS.FunctionExpression.parameters === 'first' && node.params.length) {
+      this.checkNodesIndent(node.params.slice(1), node.params[0].loc.start.column);
+    } else if (OPTIONS.FunctionExpression.parameters !== null) {
+      this.checkNodesIndent(node.params, getNodeIndent(node).goodChar + indentSize * options.FunctionExpression.parameters);
+    }
+    super.visitFunctionExpression(node);
+  }
+
+  protected visitParameterDeclaration(node: ts.ParameterDeclaration) {
+    console.log('param:', [node.getText()]);
+  }
+
+  protected visitPropertyAccessExpression(node: ts.PropertyAccessExpression) {
+    if (typeof OPTIONS.MemberExpression === 'undefined') {
+      return;
+    }
+
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+
+    // The typical layout of variable declarations and assignments
+    // alter the expectation of correct indentation. Skip them.
+    // TODO: Add appropriate configuration options for variable
+    // declarations and assignments.
+    if (this.getVariableDeclaratorNode(node)) {
+      return;
+    }
+
+    // if (this.getAssignmentExpressionNode(node)) {
+    //   return;
+    // }
+
+    const propertyIndent = this.getNodeIndent(node).goodChar + indentSize * OPTIONS.MemberExpression;
+
+    console.log('checking node:', [node.dotToken.getText()]);
+    console.log('children:', node.getChildren().map(x => x.getText()))
+    console.log('name', [node.name.getText()]);
+    console.log('expression', [node.expression.getText()]);
+    const checkNodes = [node.name, node.dotToken];
+
+    // const dot = context.getTokenBefore(node.property);
+
+    // if (dot.type === "Punctuator" && dot.value === ".") {
+    //   checkNodes.push(dot);
+    // }
+
+    this.checkNodesIndent(checkNodes, propertyIndent);
+    super.visitPropertyAccessExpression(node);
   }
 
   protected visitSourceFile(node: ts.SourceFile) {

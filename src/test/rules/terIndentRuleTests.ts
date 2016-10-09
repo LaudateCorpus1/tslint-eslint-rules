@@ -24,7 +24,7 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
   ],
-  invalid: [/*
+  invalid: [ /*
     {
       code: Lint.Utils.dedent`
         var a = b;
@@ -501,7 +501,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       errors: expectedErrors([
         [3, 3, 0]
       ])
-    }, */
+    },
     {
       code: Lint.Utils.dedent`
         class A{
@@ -511,6 +511,168 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         }`,
       options: [4, { VariableDeclarator: 1, SwitchCase: 1 }],
       errors: expectedErrors([[2, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var A = class {
+          constructor(){}
+            a(){}
+          get b(){}
+        };`,
+      options: [4, { VariableDeclarator: 1, SwitchCase: 1 }],
+      errors: expectedErrors([[2, 4, 2], [4, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var a = 1,
+            B = class {
+            constructor(){}
+              a(){}
+              get b(){}
+            };`,
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }],
+      errors: expectedErrors([[3, 6, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        {
+            if(a){
+                foo();
+            }
+          else{
+                bar();
+            }
+        }`,
+      options: [4],
+      errors: expectedErrors([[5, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        {
+            if(a){
+                foo();
+            }
+          else
+                bar();
+
+        }`,
+      options: [4],
+      errors: expectedErrors([[5, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        {
+            if(a)
+                foo();
+          else
+                bar();
+        }`,
+      options: [4],
+      errors: expectedErrors([[4, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        (function(){
+          function foo(x) {
+            return x + 1;
+          }
+        })();`,
+      options: [2, { outerIIFEBody: 0 }],
+      errors: expectedErrors([[2, 0, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        (function(){
+            function foo(x) {
+                return x + 1;
+            }
+        })();`,
+      options: [4, { outerIIFEBody: 2 }],
+      errors: expectedErrors([[2, 8, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        if(data) {
+        console.log('hi');
+        }`,
+      options: [2, { outerIIFEBody: 0 }],
+      errors: expectedErrors([[2, 2, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var ns = function(){
+            function fooVar(x) {
+                return x + 1;
+            }
+        }(x);`,
+      options: [4, { outerIIFEBody: 2 }],
+      errors: expectedErrors([[2, 8, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        var obj = {
+          foo: function() {
+          return true;
+          }()
+        };`,
+      options: [2, { outerIIFEBody: 0 }],
+      errors: expectedErrors([[3, 4, 2]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        typeof function() {
+            function fooVar(x) {
+              return x + 1;
+            }
+        }();`,
+      options: [2, { outerIIFEBody: 2 }],
+      errors: expectedErrors([[2, 2, 4]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        {
+        \t!function(x) {
+        \t\t\t\treturn x + 1;
+        \t}()
+        };`,
+      options: ['tab', { outerIIFEBody: 3 }],
+      errors: expectedErrors([[3, 2, 4]], 'tab')
+    },
+    {
+      code: '\nBuffer\n.toString()',
+      options: [4, { MemberExpression: 1 }],
+      errors: expectedErrors([[2, 4, 0]])
+    },
+    {
+      code: Lint.Utils.dedent`
+        Buffer
+            .indexOf('a')
+        .toString()`,
+      options: [4, { MemberExpression: 1 }],
+      errors: expectedErrors([[3, 4, 0]])
+    },
+    {
+      code: '\nBuffer.\nlength',
+      options: [4, { MemberExpression: 1 }],
+      errors: expectedErrors([[2, 4, 0]])
+    },
+    {
+      code: '\nBuffer.\n\t\tlength',
+      options: ['tab', { MemberExpression: 1 }],
+      errors: expectedErrors([[2, 1, 2]], 'tab')
+    },
+    {
+      code: '\nBuffer\n  .foo\n  .bar',
+      options: [2, { MemberExpression: 2 }],
+      errors: expectedErrors([[2, 4, 2], [3, 4, 2]])
+    }, */
+    {
+      code: Lint.Utils.dedent`
+        if (foo) bar();
+        else if (baz) foobar();
+          else if (qux) qux();`,
+      options: [2],
+      errors: expectedErrors([[3, 0, 2]])
     },
   ]
 };
