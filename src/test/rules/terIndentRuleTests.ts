@@ -1519,15 +1519,15 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "}",
       options: [2, {FunctionExpression: {parameters: "first", body: 3}}] // FIXME: make sure this is correct
     },
-    // {
-    //   code:
-    //   "function foo() {\n" +
-    //   "  bar();\n" +
-    //   "  \tbaz();\n" +
-    //   "\t   \t\t\t  \t\t\t  \t   \tqux();\n" +
-    //   "}",
-    //   options: [2]
-    // },
+    {
+      code:
+      "function foo() {\n" +
+      "  bar();\n" +
+      "  \tbaz();\n" +
+      "\t   \t\t\t  \t\t\t  \t   \tqux();\n" +
+      "}",
+      options: [2]
+    },
     {
       code:
       "function foo() {\n" +
@@ -1537,13 +1537,13 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "}",
       options: [2, {FunctionDeclaration: {body: 1}}]
     },
-    // {
-    //   code:
-    //   "function foo() {\n" +
-    //   "  bar();\n" +
-    //   "   \t\t}",
-    //   options: [2]
-    // },
+    {
+      code:
+      "function foo() {\n" +
+      "  bar();\n" +
+      "   \t\t}",
+      options: [2]
+    },
     {
       code:
       "function foo() {\n" +

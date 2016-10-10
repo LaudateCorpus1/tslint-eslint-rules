@@ -186,6 +186,10 @@ class IndentWalker extends Lint.RuleWalker {
    * gottenTabs: Indentation tab count in the actual node/code
    */
   private report(node: ts.Node, needed, gottenSpaces, gottenTabs) {
+    if (gottenSpaces && gottenTabs) {
+      // To avoid conflicts with `no-mixed-spaces-and-tabs`, don't report lines that have both spaces and tabs.
+      return;
+    }
     const msg = this.createErrorMessage(needed, gottenSpaces, gottenTabs);
     const width = gottenSpaces + gottenTabs;
     this.addFailure(this.createFailure(node.getStart() - width, width, msg));
