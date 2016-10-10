@@ -422,15 +422,20 @@ class IndentWalker extends Lint.RuleWalker {
         stmt.operator === "+" ||
         stmt.operator === "-"
       ) ||
-      stmt.kind === ts.SyntaxKind.FirstAssignment ||
+      (stmt.kind === ts.SyntaxKind.BinaryExpression && stmt.operatorToken.getText() === '=') ||
       stmt.kind === ts.SyntaxKind.BinaryExpression ||
       stmt.kind === ts.SyntaxKind.SyntaxList ||
       stmt.kind === ts.SyntaxKind.VariableDeclaration ||
-      stmt.kind === ts.SyntaxKind.VariableDeclarationList
+      stmt.kind === ts.SyntaxKind.VariableDeclarationList ||
+      stmt.kind === ts.SyntaxKind.ParenthesizedExpression
     ) {
       stmt = stmt.parent;
     }
 
+    console.log('before return:',[ts.SyntaxKind[stmt.kind]] );
+    console.log([stmt.kind === ts.SyntaxKind.ExpressionStatement]);
+    console.log([stmt.kind === ts.SyntaxKind.VariableStatement]);
+    console.log([stmt.parent && stmt.parent.kind === ts.SyntaxKind.SourceFile]);
     return ((
       stmt.kind === ts.SyntaxKind.ExpressionStatement ||
       stmt.kind === ts.SyntaxKind.VariableStatement) &&
@@ -518,8 +523,10 @@ class IndentWalker extends Lint.RuleWalker {
       console.log('here?');
       functionOffset = OPTIONS.outerIIFEBody * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
+      console.log('adding...');
       functionOffset = OPTIONS.FunctionExpression.body * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionDeclaration) {
+      console.log('add')
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
     console.log('offset', [functionOffset]);

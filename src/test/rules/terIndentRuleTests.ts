@@ -1213,42 +1213,42 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "});",
       options: [2, { outerIIFEBody: 0 }],
     },
-    // {
-    //   code:
-    //   "(function(){\n" +
-    //   "function foo(x) {\n" +
-    //   "  return x + 1;\n" +
-    //   "}\n" +
-    //   "})();",
-    //   options: [2, { outerIIFEBody: 0 }]
-    // },
-    // {
-    //   code:
-    //   "(function(){\n" +
-    //   "        function foo(x) {\n" +
-    //   "            return x + 1;\n" +
-    //   "        }\n" +
-    //   "})();",
-    //   options: [4, { outerIIFEBody: 2 }]
-    // },
-    // {
-    //   code:
-    //   "(function(x, y){\n" +
-    //   "function foo(x) {\n" +
-    //   "  return x + 1;\n" +
-    //   "}\n" +
-    //   "})(1, 2);",
-    //   options: [2, { outerIIFEBody: 0 }]
-    // },
-    // {
-    //   code:
-    //   "(function(){\n" +
-    //   "function foo(x) {\n" +
-    //   "  return x + 1;\n" +
-    //   "}\n" +
-    //   "}());",
-    //   options: [2, { outerIIFEBody: 0 }]
-    // },
+    {
+      code:
+      "(function(){\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "})();",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "(function(){\n" +
+      "        function foo(x) {\n" +
+      "            return x + 1;\n" +
+      "        }\n" +
+      "})();",
+      options: [4, { outerIIFEBody: 2 }]
+    },
+    {
+      code:
+      "(function(x, y){\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "})(1, 2);",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "(function(){\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "}());",
+      options: [2, { outerIIFEBody: 0 }]
+    },
 
 
 
