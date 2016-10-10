@@ -249,7 +249,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "  console.log('hi');\n" +
       "  return true;};",
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -548,14 +547,12 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "let geometry,\n" +
       "    rotate;",
       options: [2, {VariableDeclarator: 2}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
       "const geometry = 2,\n" +
       "    rotate = 3;",
       options: [2, {VariableDeclarator: 2}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -593,7 +590,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    index;\n" +
       "});\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -601,7 +597,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    return index;\n" +
       "});\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -609,7 +604,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    index;\n" +
       "});\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -617,7 +611,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    return index;\n" +
       "});\n",
       options: [4],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -772,7 +765,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
     {
       code: "import {addons} from 'react/addons'\nimport React from 'react'",
       options: [2],
-      parserOptions: { sourceType: "module" }
     },
     {
       code:
@@ -826,7 +818,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "  }\n" +
       ");\n",
       options: [2, {VariableDeclarator: 3}],
-      parserOptions: { ecmaVersion: 6 }
 
     },
     {
@@ -838,7 +829,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "let light = true,\n" +
       "    shadow = false;",
       options: [2, { VariableDeclarator: { const: 3, let: 2 } }],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -864,7 +854,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "      b: 2\n" +
       "    };\n",
       options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -909,7 +898,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    b: argument\n" +
       "  });\n" +
       "};",
-      parserOptions: { sourceType: "module" },
       options: [2]
     },
     {
@@ -920,7 +908,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "                        padding=defaultPadding) {\n" +
       "  // ... function body, indented two spaces\n" +
       "}\n",
-      parserOptions: { sourceType: "module" },
       options: [2]
     },
     {
@@ -953,7 +940,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "var res,\n" +
       "    a = 5,\n" +
       "    b = 4\n",
-      parserOptions: { ecmaVersion: 6 },
       options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
     },
     {
@@ -966,7 +952,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    b = 4\n" +
       "\n" +
       "if (YO) console.log(TE)",
-      parserOptions: { ecmaVersion: 6 },
       options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
     },
     {
@@ -1041,7 +1026,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "      get b(){}\n" +
       "    };",
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -1054,7 +1038,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    },\n" +
       "    c = 3;",
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -1064,7 +1047,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    get b(){}\n" +
       "}",
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -1074,7 +1056,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "    get b(){}\n" +
       "}",
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
-      parserOptions: { ecmaVersion: 6 }
     },
     {
       code:
@@ -1130,7 +1111,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "        ].forEach(command => { doSomething(); });\n" +
       "    });\n" +
       "};",
-      parserOptions: { ecmaVersion: 6 },
       options: [4, {MemberExpression: 0}]
     },
     {
@@ -1143,7 +1123,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "            ].forEach(command => { doSomething(); });\n" +
       "        });\n" +
       "};",
-      parserOptions: { ecmaVersion: 6 },
       options: [4]
     },
     {
@@ -1187,7 +1166,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "      .value();\n" +
       "  }\n" +
       "};",
-      parserOptions: { ecmaVersion: 6 },
       options: [2]
     },
     {
@@ -1339,7 +1317,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "  return x + 1;\n" +
       "}\n" +
       "})();",
-      parserOptions: { ecmaVersion: 6 },
       options: [2, { outerIIFEBody: 0 }]
     },
     {
@@ -1355,7 +1332,6 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "  return x + 1;\n" +
       "}\n" +
       "})();",
-      parserOptions: { ecmaVersion: 6 },
       options: [2, { outerIIFEBody: 0 }]
     },
     {
