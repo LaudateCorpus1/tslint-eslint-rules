@@ -237,8 +237,19 @@ class IndentWalker extends Lint.RuleWalker {
     const spaces = indentChars.filter(char => char === ' ').length;
     const tabs = indentChars.filter(char => char === '\t').length;
 
+    let firstInLine = false;
+    const comments = ts.getLeadingCommentRanges(node.getFullText(), 0);
+    if (comments && comments.length) {
+      const offset = node.getFullStart();
+      const lastComment = comments[comments.length - 1];
+      const comment = this.getSourceSubstr(lastComment.pos + offset, lastComment.end + offset);
+      if (comment.indexOf('\n') !== -1) {
+        firstInLine = true;
+      }
+    }
+
     return {
-      firstInLine: spaces + tabs === str.length,
+      firstInLine: spaces + tabs === str.length || firstInLine,
       space: spaces,
       tab: tabs,
       goodChar: indentType === 'space' ? spaces : tabs,
@@ -773,11 +784,6 @@ class IndentWalker extends Lint.RuleWalker {
     }
   }
 
-  protected visitBinaryExpression(node: ts.BinaryExpression) {
-    // this.validateUseIsnan(node);
-    super.visitBinaryExpression(node);
-  }
-
   protected visitClassDeclaration(node: ts.ClassDeclaration) {
     const len = node.getChildCount();
     this.blockIndentationCheck(node.getChildAt(len - 2));
@@ -832,7 +838,6 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodeIndent(node, indent);
   }
 
-
   private visitCase(node: ts.Node) {
     if (this.isSingleLineNode(node)) {
       return;
@@ -843,29 +848,32 @@ class IndentWalker extends Lint.RuleWalker {
 
   protected visitCaseClause(node: ts.CaseClause) {
     this.visitCase(node);
-    // super.visitCaseClause(node);
+    super.visitCaseClause(node);
   }
 
   protected visitDefaultClause(node: ts.DefaultClause) {
     this.visitCase(node);
-    // super.visitDefaultClause(node);
+    super.visitDefaultClause(node);
   }
 
   protected visitWhileStatement(node: ts.WhileStatement) {
     this.blockLessNodes(node);
-    // super.visitWhileStatement(node);
+    super.visitWhileStatement(node);
   }
 
   protected visitForStatement(node: ts.ForStatement) {
     this.blockLessNodes(node);
+    super.visitForStatement(node);
   }
 
   protected visitForInStatement(node: ts.ForInStatement) {
     this.blockLessNodes(node);
+    super.visitForInStatement(node);
   }
 
   protected visitDoStatement(node: ts.DoStatement) {
     this.blockLessNodes(node);
+    super.visitDoStatement(node);
   }
 
   protected visitVariableDeclaration(node: ts.VariableDeclaration) {

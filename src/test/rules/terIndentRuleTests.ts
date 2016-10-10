@@ -2405,9 +2405,21 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         }`,
       options: [2, { FunctionExpression: { parameters: 3 } }],
       errors: expectedErrors([[3, 8, 10]])
-    },/*
+    },
     {
-      code: fixture,
+      code: Lint.Utils.dedent`
+        /**/var b; // NO ERROR: single line multi-line comments followed by code is OK
+        /*
+         *
+         */ var b; // ERROR: multi-line comments followed by code is not OK
+        `,
+      options: [2],
+      errors: expectedErrors([
+        [4, 0, 1]
+      ])
+    },
+    {
+      code: '\n' + fixture,
       options: [2, { SwitchCase: 1, MemberExpression: 1 }],
       errors: expectedErrors([
         [5, 2, 4],
@@ -2503,7 +2515,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         [501, 8, 6],
         [506, 6, 8]
       ])
-    }*/
+    }
   ]
 };
 
