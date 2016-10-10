@@ -188,7 +188,6 @@ class IndentWalker extends Lint.RuleWalker {
   private report(node: ts.Node, needed, gottenSpaces, gottenTabs) {
     const msg = this.createErrorMessage(needed, gottenSpaces, gottenTabs);
     const width = gottenSpaces + gottenTabs;
-    console.log('node:', [node.getText()]);
     this.addFailure(this.createFailure(node.getStart() - width, width, msg));
   }
 
@@ -407,20 +406,18 @@ class IndentWalker extends Lint.RuleWalker {
     /*
    * Verify that the node is an IIEF
    */
-    console.log('PARENT:', [ts.SyntaxKind[parent.kind], expressionIsNode]);
     if (parent.kind !== ts.SyntaxKind.CallExpression || expressionIsNode) {
-      console.log('its not');
       return false;
     }
     /*
    * Navigate legal ancestors to determine whether this IIEF is outer
    */
     while (
-      stmt.kind === "UnaryExpression" && (
-        stmt.operator === "!" ||
-        stmt.operator === "~" ||
-        stmt.operator === "+" ||
-        stmt.operator === "-"
+      stmt.kind === ts.SyntaxKind.PrefixUnaryExpression && (
+        stmt.operator === ts.SyntaxKind.ExclamationToken ||
+        stmt.operator === ts.SyntaxKind.TildeToken ||
+        stmt.operator === ts.SyntaxKind.PlusToken ||
+        stmt.operator === ts.SyntaxKind.MinusToken
       ) ||
       (stmt.kind === ts.SyntaxKind.BinaryExpression && stmt.operatorToken.getText() === '=') ||
       stmt.kind === ts.SyntaxKind.BinaryExpression ||
@@ -432,10 +429,6 @@ class IndentWalker extends Lint.RuleWalker {
       stmt = stmt.parent;
     }
 
-    console.log('before return:',[ts.SyntaxKind[stmt.kind]] );
-    console.log([stmt.kind === ts.SyntaxKind.ExpressionStatement]);
-    console.log([stmt.kind === ts.SyntaxKind.VariableStatement]);
-    console.log([stmt.parent && stmt.parent.kind === ts.SyntaxKind.SourceFile]);
     return ((
       stmt.kind === ts.SyntaxKind.ExpressionStatement ||
       stmt.kind === ts.SyntaxKind.VariableStatement) &&
@@ -497,7 +490,6 @@ class IndentWalker extends Lint.RuleWalker {
 
     if (calleeNode.parent.kind === ts.SyntaxKind.CallExpression) {
       const calleeParent = calleeNode.parent;
-      console.log('in here'.blue);
 
       if (calleeNode.kind !== ts.SyntaxKind.FunctionExpression && calleeNode.kind !== ts.SyntaxKind.ArrowFunction) {
         if (calleeParent && this.getLineAndCharacter(calleeParent).line < this.getLineAndCharacter(node).line) {
@@ -514,24 +506,17 @@ class IndentWalker extends Lint.RuleWalker {
         }
       }
     }
-    console.log('indent'.blue, [indent]);
     // function body indent should be indent + indent size, unless this
     // is a FunctionDeclaration, FunctionExpression, or outer IIFE and the corresponding options are enabled.
     let functionOffset = indentSize;
-    console.log('offset', [functionOffset]);
     if (OPTIONS.outerIIFEBody !== null && this.isOuterIIFE(calleeNode)) {
-      console.log('here?');
       functionOffset = OPTIONS.outerIIFEBody * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionExpression) {
-      console.log('adding...');
       functionOffset = OPTIONS.FunctionExpression.body * indentSize;
     } else if (calleeNode.kind === ts.SyntaxKind.FunctionDeclaration) {
-      console.log('add')
       functionOffset = OPTIONS.FunctionDeclaration.body * indentSize;
     }
-    console.log('offset', [functionOffset]);
     indent += functionOffset;
-    console.log('indent'.red, [indent]);
 
     // check if the node is inside a variable
     const parentVarNode = this.getVariableDeclaratorNode(node);
@@ -629,6 +614,10 @@ class IndentWalker extends Lint.RuleWalker {
    */
   protected getVariableDeclaratorNode(node: ts.Node) {
     return this.getParentNodeByType(node, ts.SyntaxKind.VariableDeclaration);
+  }
+
+  protected getBinaryExpressionNode(node: ts.Node) {
+    return this.getParentNodeByType(node, ts.SyntaxKind.BinaryExpression);
   }
 
   /**
@@ -955,9 +944,10 @@ class IndentWalker extends Lint.RuleWalker {
       return;
     }
 
-    // if (this.getAssignmentExpressionNode(node)) {
-    //   return;
-    // }
+    const binaryNode = this.getBinaryExpressionNode(node);
+    if (binaryNode && binaryNode.operatorToken.getText() === '=') {
+      return;
+    }
 
     const propertyIndent = this.getNodeIndent(node).goodChar + indentSize * OPTIONS.MemberExpression;
     const checkNodes = [node.name, node.dotToken];

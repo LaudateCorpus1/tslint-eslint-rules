@@ -1249,10 +1249,321 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       "}());",
       options: [2, { outerIIFEBody: 0 }]
     },
-
-
-
-
+    {
+      code:
+      "!function(){\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "}();",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "!function(){\n" +
+      "\t\t\tfunction foo(x) {\n" +
+      "\t\t\t\treturn x + 1;\n" +
+      "\t\t\t}\n" +
+      "}();",
+      options: ["tab", { outerIIFEBody: 3 }]
+    },
+    {
+      code:
+      "var out = function(){\n" +
+      "  function fooVar(x) {\n" +
+      "    return x + 1;\n" +
+      "  }\n" +
+      "};",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "var ns = function(){\n" +
+      "function fooVar(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "}();",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "ns = function(){\n" +
+      "function fooVar(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "}();",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "var ns = (function(){\n" +
+      "function fooVar(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "}(x));",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "var ns = (function(){\n" +
+      "        function fooVar(x) {\n" +
+      "            return x + 1;\n" +
+      "        }\n" +
+      "}(x));",
+      options: [4, { outerIIFEBody: 2 }]
+    },
+    {
+      code:
+      "var obj = {\n" +
+      "  foo: function() {\n" +
+      "    return true;\n" +
+      "  }\n" +
+      "};",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "while (\n" +
+      "  function() {\n" +
+      "    return true;\n" +
+      "  }()) {\n" +
+      "\n" +
+      "  x = x + 1;\n" +
+      "};",
+      options: [2, { outerIIFEBody: 20 }]
+    },
+    {
+      code:
+      "(() => {\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "})();",
+      parserOptions: { ecmaVersion: 6 },
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "function foo() {\n" +
+      "}",
+      options: ["tab", { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      ";(() => {\n" +
+      "function foo(x) {\n" +
+      "  return x + 1;\n" +
+      "}\n" +
+      "})();",
+      parserOptions: { ecmaVersion: 6 },
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+      "if(data) {\n" +
+      "  console.log('hi');\n" +
+      "}",
+      options: [2, { outerIIFEBody: 0 }]
+    },
+    {
+      code:
+        "Buffer.length",
+      options: [4, { MemberExpression: 1 }]
+    },
+    {
+      code:
+      "Buffer\n" +
+      "    .indexOf('a')\n" +
+      "    .toString()",
+      options: [4, { MemberExpression: 1 }]
+    },
+    {
+      code:
+      "Buffer.\n" +
+      "    length",
+      options: [4, { MemberExpression: 1 }]
+    },
+    {
+      code:
+      "Buffer\n" +
+      "    .foo\n" +
+      "    .bar",
+      options: [4, { MemberExpression: 1 }]
+    },
+    {
+      code:
+      "Buffer\n" +
+      "\t.foo\n" +
+      "\t.bar",
+      options: ["tab", { MemberExpression: 1 }]
+    },
+    {
+      code:
+      "Buffer\n" +
+      "    .foo\n" +
+      "    .bar",
+      options: [2, {MemberExpression: 2}]
+    },
+    {
+      code:
+      "MemberExpression\n" +
+      ".is" +
+      "  .off" +
+      "    .by" +
+      " .default();",
+      options: [4]
+    },
+    {
+      code:
+      "foo = bar.baz()\n" +
+      "        .bip();",
+      options: [4, {MemberExpression: 1}]
+    },
+    {
+      code:
+      "if (foo) {\n" +
+      "  bar();\n" +
+      "} else if (baz) {\n" +
+      "  foobar();\n" +
+      "} else if (qux) {\n" +
+      "  qux();\n" +
+      "}",
+      options: [2]
+    },
+    {
+      code:
+      "function foo(aaa,\n" +
+      "  bbb, ccc, ddd) {\n" +
+      "    bar();\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {parameters: 1, body: 2}}]
+    },
+    {
+      code:
+      "function foo(aaa, bbb,\n" +
+      "      ccc, ddd) {\n" +
+      "  bar();\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {parameters: 3, body: 1}}]
+    },
+    {
+      code:
+      "function foo(aaa,\n" +
+      "    bbb,\n" +
+      "    ccc) {\n" +
+      "            bar();\n" +
+      "}",
+      options: [4, {FunctionDeclaration: {parameters: 1, body: 3}}]
+    },
+    {
+      code:
+      "function foo(aaa,\n" +
+      "             bbb, ccc,\n" +
+      "             ddd, eee, fff) {\n" +
+      "  bar();\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {parameters: "first", body: 1}}]
+    },
+    {
+      code:
+      "function foo(aaa, bbb)\n" +
+      "{\n" +
+      "      bar();\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {body: 3}}] // FIXME: what is the default for `parameters`?
+    },
+    {
+      code:
+      "function foo(\n" +
+      "  aaa,\n" +
+      "  bbb) {\n" +
+      "    bar();\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {parameters: "first", body: 2}}] // FIXME: make sure this is correct
+    },
+    {
+      code:
+      "var foo = function(aaa,\n" +
+      "    bbb,\n" +
+      "    ccc,\n" +
+      "    ddd) {\n" +
+      "bar();\n" +
+      "}",
+      options: [2, {FunctionExpression: {parameters: 2, body: 0}}]
+    },
+    {
+      code:
+      "var foo = function(aaa,\n" +
+      "  bbb,\n" +
+      "  ccc) {\n" +
+      "                    bar();\n" +
+      "}",
+      options: [2, {FunctionExpression: {parameters: 1, body: 10}}]
+    },
+    //---
+    {
+      code:
+      "var foo = function(aaa,\n" +
+      "                   bbb, ccc, ddd,\n" +
+      "                   eee, fff) {\n" +
+      "    bar();\n" +
+      "}",
+      options: [4, {FunctionExpression: {parameters: "first", body: 1}}]
+    },
+    {
+      code:
+      "var foo = function(\n" +
+      "  aaa, bbb, ccc,\n" +
+      "  ddd, eee) {\n" +
+      "      bar();\n" +
+      "}",
+      options: [2, {FunctionExpression: {parameters: "first", body: 3}}] // FIXME: make sure this is correct
+    },
+    // {
+    //   code:
+    //   "function foo() {\n" +
+    //   "  bar();\n" +
+    //   "  \tbaz();\n" +
+    //   "\t   \t\t\t  \t\t\t  \t   \tqux();\n" +
+    //   "}",
+    //   options: [2]
+    // },
+    {
+      code:
+      "function foo() {\n" +
+      "  function bar() {\n" +
+      "    baz();\n" +
+      "  }\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {body: 1}}]
+    },
+    // {
+    //   code:
+    //   "function foo() {\n" +
+    //   "  bar();\n" +
+    //   "   \t\t}",
+    //   options: [2]
+    // },
+    {
+      code:
+      "function foo() {\n" +
+      "  function bar(baz,\n" +
+      "      qux) {\n" +
+      "    foobar();\n" +
+      "  }\n" +
+      "}",
+      options: [2, {FunctionDeclaration: {body: 1, parameters: 2}}]
+    },
+    {
+      code:
+      "function foo() {\n" +
+      "  var bar = function(baz,\n" +
+      "        qux) {\n" +
+      "    foobar();\n" +
+      "  };\n" +
+      "}",
+      options: [2, {FunctionExpression: {parameters: 3}}]
+    }
   ],
   invalid: [
     {
