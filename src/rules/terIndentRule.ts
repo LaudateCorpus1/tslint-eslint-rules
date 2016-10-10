@@ -1,3 +1,8 @@
+/**
+ * eslint commit: 332d21383d58fa75bd8d192fe03453f9bcbfe095
+ *
+ * Keep checking differences to that commit to see if there are any other test cases.
+ */
 import * as ts from 'typescript';
 import * as Lint from 'tslint/lib/lint';
 import 'colors';
@@ -277,7 +282,7 @@ class IndentWalker extends Lint.RuleWalker {
     }
   }
 
-  private isSingleLineNode(node) {
+  private isSingleLineNode(node): boolean {
     return node.getText().indexOf('\n') === -1;
   }
 
@@ -377,12 +382,7 @@ class IndentWalker extends Lint.RuleWalker {
     const startIndent = this.getNodeIndent(node);
     const firstInLine = startIndent.firstInLine;
     if (firstInLine && (startIndent.goodChar !== firstLineIndent || startIndent.badChar !== 0)) {
-      this.report(
-        node,
-        firstLineIndent,
-        startIndent.space,
-        startIndent.tab
-      );
+      this.report(node, firstLineIndent, startIndent.space, startIndent.tab);
     }
   }
 
@@ -394,15 +394,10 @@ class IndentWalker extends Lint.RuleWalker {
    */
   private checkLastNodeLineIndent(node, lastLineIndent) {
     const lastToken = node.getLastToken();
-    const endIndent = this.getNodeIndent(lastToken, true);
+    const endIndent = this.getNodeIndent(lastToken);
     const firstInLine = endIndent.firstInLine;
     if (firstInLine && (endIndent.goodChar !== lastLineIndent || endIndent.badChar !== 0)) {
-      this.report(
-        lastToken,
-        lastLineIndent,
-        endIndent.space,
-        endIndent.tab
-      );
+      this.report(lastToken, lastLineIndent, endIndent.space, endIndent.tab);
     }
   }
 
@@ -473,35 +468,8 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {void}
    */
   private checkIndentInFunctionBlock(node) {
-
-    /*
-   * Search first caller in chain.
-   * Ex.:
-   *
-   * Models <- Identifier
-   *   .User
-   *   .find()
-   *   .exec(function() {
-   *   // function body
-   * });
-   *
-   * Looks for 'Models'
-   */
     const calleeNode = node.parent; // FunctionExpression
-
-    let indent;
-
-    if (calleeNode.parent &&
-      (calleeNode.parent.kind === "Property" ||
-      calleeNode.parent.kind === "ArrayExpression")) {
-
-      // If function is part of array or object, comma can be put at left
-      indent = this.getNodeIndent(calleeNode).goodChar;
-    } else {
-
-      // If function is standalone, simple calculate indent
-      indent = this.getNodeIndent(calleeNode).goodChar;
-    }
+    let indent = this.getNodeIndent(calleeNode).goodChar;
 
     if (calleeNode.parent.kind === ts.SyntaxKind.CallExpression) {
       const calleeParent = calleeNode.parent;
@@ -541,7 +509,7 @@ class IndentWalker extends Lint.RuleWalker {
       indent += indentSize * OPTIONS.VariableDeclarator[varKind];
     }
 
-    if (node.statements.length > 0) {
+    if (node.statements.length) {
       this.checkNodesIndent(node.statements, indent);
     }
 
