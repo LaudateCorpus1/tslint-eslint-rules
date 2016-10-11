@@ -137,8 +137,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       options: [4]
     },
     {
-      code:
-        "var x = 0 && { a: 1, b: 2 };",
+      code: 'var x = 0 && { a: 1, b: 2 };',
       options: [4]
     },
     {
