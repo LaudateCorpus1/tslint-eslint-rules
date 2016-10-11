@@ -570,7 +570,7 @@ class IndentWalker extends Lint.RuleWalker {
   private expectedVarIndent(node: ts.VariableDeclaration, varIndent?: number) {
     // VariableStatement -> VariableDeclarationList -> VariableDeclaration
     const varNode = node.parent.parent;
-    const line = this.getLineAndCharacter(varNode).line;
+    const line = this.getLine(varNode);
     let indent;
 
     if (this.varIndentStore[line]) {
@@ -871,8 +871,8 @@ class IndentWalker extends Lint.RuleWalker {
     const len = list.getChildCount();
     const lastElement = list.getChildAt(len - 1);
     const lastToken = node.getLastToken();
-    const lastTokenLine = this.getLineAndCharacter(lastToken, true).line;
-    const lastElementLine = this.getLineAndCharacter(lastElement, true).line;
+    const lastTokenLine = this.getLine(lastToken, true);
+    const lastElementLine = this.getLine(lastElement, true);
 
     // Only check the last line if there is any token after the last item
     if (lastTokenLine <= lastElementLine) {
@@ -880,11 +880,12 @@ class IndentWalker extends Lint.RuleWalker {
     }
 
     const tokenBeforeLastElement = list.getChildAt(len - 2);
-    if (tokenBeforeLastElement.kind === ts.SyntaxKind.CommaToken) {
+    if (isKind(tokenBeforeLastElement, 'CommaToken')) {
       // Special case for comma-first syntax where the semicolon is indented
       this.checkLastNodeLineIndent(node, this.getNodeIndent(tokenBeforeLastElement).goodChar);
     } else {
-      this.checkLastNodeLineIndent(node, elementsIndent - indentSize);
+      // TODO: Do we ever get here? Did not see an error in the test when uncommenting next line.
+      // this.checkLastNodeLineIndent(node, elementsIndent - indentSize);
     }
   }
 
@@ -955,5 +956,4 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodesIndent(node.statements, 0);
     super.visitSourceFile(node);
   }
-
 }

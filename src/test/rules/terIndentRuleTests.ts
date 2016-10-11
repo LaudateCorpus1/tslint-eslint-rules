@@ -915,6 +915,12 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
     },
     {
       code: Lint.Utils.dedent`
+        const a: number = 1
+             ,b: number = 2
+             ;`
+    },
+    {
+      code: Lint.Utils.dedent`
         export function create (some,
                                 argument) {
           return Object.create({
@@ -1058,7 +1064,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
               a(){}
               get b(){}
             };`,
-      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }]
     },
     {
       code: Lint.Utils.dedent`
@@ -1070,7 +1076,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
               get b(){}
             },
             c = 3;`,
-      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
+      options: [2, { VariableDeclarator: 2, SwitchCase: 1 }]
     },
     {
       code: Lint.Utils.dedent`
@@ -1079,7 +1085,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             a(){}
             get b(){}
         }`,
-      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+      options: [4, { VariableDeclarator: 1, SwitchCase: 1 }]
     },
     {
       code: Lint.Utils.dedent`
@@ -1088,7 +1094,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             a(){}
             get b(){}
         }`,
-      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
+      options: [4, { VariableDeclarator: 1, SwitchCase: 1 }]
     },
     {
       code: Lint.Utils.dedent`
@@ -1125,7 +1131,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             ]
         };
         `,
-      options: [4, {VariableDeclarator: 0, SwitchCase: 1}]
+      options: [4, { VariableDeclarator: 0, SwitchCase: 1 }]
     },
     {
       code: Lint.Utils.dedent`
