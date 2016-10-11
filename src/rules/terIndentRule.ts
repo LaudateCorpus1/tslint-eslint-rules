@@ -366,7 +366,17 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   private isClassLike(node) {
-    return node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ClassExpression;
+    return isKind(node, 'ClassDeclaration') || isKind(node, 'ClassExpression');
+  }
+
+  /**
+   * Check if node is an assignment expression, i.e. the binary expression contains the equal token.
+   */
+  private isAssignment(node: ts.Node): boolean {
+    if (!isKind(node, 'BinaryExpression')) {
+      return false;
+    }
+    return (node as ts.BinaryExpression).operatorToken.getText() === '=';
   }
 
   /**
@@ -438,7 +448,6 @@ class IndentWalker extends Lint.RuleWalker {
         stmt.operator === ts.SyntaxKind.PlusToken ||
         stmt.operator === ts.SyntaxKind.MinusToken
       ) ||
-      (stmt.kind === ts.SyntaxKind.BinaryExpression && stmt.operatorToken.getText() === '=') ||
       stmt.kind === ts.SyntaxKind.BinaryExpression ||
       stmt.kind === ts.SyntaxKind.SyntaxList ||
       stmt.kind === ts.SyntaxKind.VariableDeclaration ||
@@ -687,7 +696,7 @@ class IndentWalker extends Lint.RuleWalker {
         effectiveParent.kind !== ts.SyntaxKind.PropertyAccessExpression &&
         effectiveParent.kind !== ts.SyntaxKind.ExpressionStatement &&
         effectiveParent.kind !== ts.SyntaxKind.PropertyAssignment &&
-        !(effectiveParent.kind === ts.SyntaxKind.BinaryExpression && effectiveParent.operatorToken.getText() === '=')
+        !(this.isAssignment(effectiveParent))
       ) {
         nodeIndent = nodeIndent + indentSize;
       }
@@ -934,7 +943,7 @@ class IndentWalker extends Lint.RuleWalker {
     }
 
     const binaryNode: ts.BinaryExpression = this.getBinaryExpressionNode(node);
-    if (binaryNode && binaryNode.operatorToken.getText() === '=') {
+    if (binaryNode && this.isAssignment(binaryNode)) {
       return;
     }
 
