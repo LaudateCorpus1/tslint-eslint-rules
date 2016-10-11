@@ -421,46 +421,42 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   /**
-   * Check to see if the node is a file level IIFE
-   * @param {ASTNode} node The function node to check.
-   * @returns {boolean} True if the node is the outer IIFE
+   * Check to see if the node function is a file level IIFE
    */
-  private isOuterIIFE(node) {
+  private isOuterIIFE(node): boolean {
     let parent = node.parent;
     let expressionIsNode = parent.expression !== node;
-    if (parent.kind === ts.SyntaxKind.ParenthesizedExpression) {
+    if (isKind(parent, 'ParenthesizedExpression')) {
       parent = parent.parent;
     }
     let stmt = parent.parent;
-    /*
-   * Verify that the node is an IIEF
-   */
-    if (parent.kind !== ts.SyntaxKind.CallExpression || expressionIsNode) {
+
+    // Verify that the node is an IIEF
+    if (!isKind(parent, 'CallExpression') || expressionIsNode) {
       return false;
     }
-    /*
-   * Navigate legal ancestors to determine whether this IIEF is outer
-   */
+
+    // Navigate legal ancestors to determine whether this IIEF is outer
     while (
-      stmt.kind === ts.SyntaxKind.PrefixUnaryExpression && (
+      isKind(stmt, 'PrefixUnaryExpression') && (
         stmt.operator === ts.SyntaxKind.ExclamationToken ||
         stmt.operator === ts.SyntaxKind.TildeToken ||
         stmt.operator === ts.SyntaxKind.PlusToken ||
         stmt.operator === ts.SyntaxKind.MinusToken
       ) ||
-      stmt.kind === ts.SyntaxKind.BinaryExpression ||
-      stmt.kind === ts.SyntaxKind.SyntaxList ||
-      stmt.kind === ts.SyntaxKind.VariableDeclaration ||
-      stmt.kind === ts.SyntaxKind.VariableDeclarationList ||
-      stmt.kind === ts.SyntaxKind.ParenthesizedExpression
+      isKind(stmt, 'BinaryExpression') ||
+      isKind(stmt, 'SyntaxList') ||
+      isKind(stmt, 'VariableDeclaration') ||
+      isKind(stmt, 'VariableDeclarationList') ||
+      isKind(stmt, 'ParenthesizedExpression')
     ) {
       stmt = stmt.parent;
     }
 
     return ((
-      stmt.kind === ts.SyntaxKind.ExpressionStatement ||
-      stmt.kind === ts.SyntaxKind.VariableStatement) &&
-      stmt.parent && stmt.parent.kind === ts.SyntaxKind.SourceFile
+      isKind(stmt, 'ExpressionStatement') ||
+      isKind(stmt, 'VariableStatement')) &&
+      stmt.parent && isKind(stmt.parent, 'SourceFile')
     );
   }
 
