@@ -63,14 +63,14 @@ export class Rule extends Lint.Rules.AbstractRule {
           //   minumum: "1",
           // },
         },
-        additionalProperties: false,
+        additionalProperties: false
       }],
       minLength: 1,
       maxLength: 2
     },
     optionExamples: [
     ],
-    type: 'maintainability',
+    type: 'maintainability'
   };
 
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
@@ -342,7 +342,7 @@ class IndentWalker extends Lint.RuleWalker {
       ) {
         nodesToCheck = node.getChildren();
       } else {
-        nodesToCheck = [node.statement];
+        nodesToCheck = [(node as ts.IterationStatement).statement];
       }
     }
     this.checkNodeIndent(node, indent);
