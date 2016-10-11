@@ -579,14 +579,14 @@ class IndentWalker extends Lint.RuleWalker {
    * @param {string} type type that is being looked for
    * @returns {ASTNode|void} if found then node otherwise null
    */
-  protected getParentNodeByType(node: ts.Node, kind) {
+  private getParentNodeByType<T extends ts.Node>(node: ts.Node, kind): T {
     let parent = node.parent;
 
     while (parent.kind !== kind && parent.kind !== ts.SyntaxKind.SourceFile) {
       parent = parent.parent;
     }
 
-    return parent.kind === kind ? parent : null;
+    return parent.kind === kind ? parent as T : null;
   }
 
   /**
@@ -595,12 +595,12 @@ class IndentWalker extends Lint.RuleWalker {
    * @param {ASTNode} node node to examine
    * @returns {ASTNode|void} if found then node otherwise null
    */
-  protected getVariableDeclaratorNode(node: ts.Node) {
-    return this.getParentNodeByType(node, ts.SyntaxKind.VariableDeclaration);
+  protected getVariableDeclaratorNode(node: ts.Node): ts.VariableDeclaration {
+    return this.getParentNodeByType<ts.VariableDeclaration>(node, ts.SyntaxKind.VariableDeclaration);
   }
 
-  protected getBinaryExpressionNode(node: ts.Node) {
-    return this.getParentNodeByType(node, ts.SyntaxKind.BinaryExpression);
+  protected getBinaryExpressionNode(node: ts.Node): ts.BinaryExpression {
+    return this.getParentNodeByType<ts.BinaryExpression>(node, ts.SyntaxKind.BinaryExpression);
   }
 
   /**
@@ -924,19 +924,13 @@ class IndentWalker extends Lint.RuleWalker {
       return;
     }
 
-    const binaryNode = this.getBinaryExpressionNode(node);
+    const binaryNode: ts.BinaryExpression = this.getBinaryExpressionNode(node);
     if (binaryNode && binaryNode.operatorToken.getText() === '=') {
       return;
     }
 
     const propertyIndent = this.getNodeIndent(node).goodChar + indentSize * OPTIONS.MemberExpression;
     const checkNodes = [node.name, node.dotToken];
-
-    // const dot = context.getTokenBefore(node.property);
-
-    // if (dot.type === "Punctuator" && dot.value === ".") {
-    //   checkNodes.push(dot);
-    // }
 
     this.checkNodesIndent(checkNodes, propertyIndent);
     super.visitPropertyAccessExpression(node);
