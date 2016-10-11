@@ -256,7 +256,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         foo = () => {
           console.log('hi');
           return true;};`,
-      options: [2, {VariableDeclarator: 1, SwitchCase: 1}],
+      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
       code: Lint.Utils.dedent`
@@ -556,13 +556,13 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       code: Lint.Utils.dedent`
         let geometry,
             rotate;`,
-      options: [2, {VariableDeclarator: 2}],
+      options: [2, {VariableDeclarator: 2}]
     },
     {
       code: Lint.Utils.dedent`
         const geometry = 2,
             rotate = 3;`,
-      options: [2, {VariableDeclarator: 2}],
+      options: [2, {VariableDeclarator: 2}]
     },
     {
       code: Lint.Utils.dedent`
@@ -601,7 +601,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             index;
         });
         `,
-      options: [4],
+      options: [4]
     },
     {
       code: Lint.Utils.dedent`
@@ -610,7 +610,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             return index;
         });
         `,
-      options: [4],
+      options: [4]
     },
     {
       code: Lint.Utils.dedent`
@@ -618,7 +618,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             index;
         });
         `,
-      options: [4],
+      options: [4]
     },
     {
       code: Lint.Utils.dedent`
@@ -626,7 +626,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
             return index;
         });
         `,
-      options: [4],
+      options: [4]
     },
     {
       code: Lint.Utils.dedent`
@@ -781,7 +781,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
     },
     {
       code: "import {addons} from 'react/addons'\nimport React from 'react'",
-      options: [2],
+      options: [2]
     },
     {
       code: Lint.Utils.dedent`
@@ -839,7 +839,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
           }
         );
         `,
-      options: [2, { VariableDeclarator: 3 }],
+      options: [2, { VariableDeclarator: 3 }]
 
     },
     {
@@ -850,7 +850,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
           b = 2;
         let light = true,
             shadow = false;`,
-      options: [2, { VariableDeclarator: { const: 3, let: 2 } }],
+      options: [2, { VariableDeclarator: { const: 3, let: 2 } }]
     },
     {
       code: Lint.Utils.dedent`
@@ -876,7 +876,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
               b: 2
             };
         `,
-      options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}],
+      options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}]
     },
     {
       code: Lint.Utils.dedent`
@@ -1036,7 +1036,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
                 console.log(argument);
             },
             someOtherValue = 'someOtherValue';
-        `,
+        `
     },
     {
       code: Lint.Utils.dedent`
@@ -1226,7 +1226,7 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
         fs.readdirSync(path.join(__dirname, '../rules')).forEach(name => {
           files[name] = foo;
         });`,
-      options: [2, { outerIIFEBody: 0 }],
+      options: [2, { outerIIFEBody: 0 }]
     },
     {
       code: Lint.Utils.dedent`
