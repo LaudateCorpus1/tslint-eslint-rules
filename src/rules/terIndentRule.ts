@@ -5,7 +5,6 @@
  */
 import * as ts from 'typescript';
 import * as Lint from 'tslint/lib/lint';
-import 'colors';
 
 const DEFAULT_VARIABLE_INDENT = 1;
 const DEFAULT_PARAMETER_INDENT = null;
@@ -13,6 +12,10 @@ const DEFAULT_FUNCTION_BODY_INDENT = 1;
 let indentType = 'space';
 let indentSize = 4;
 let OPTIONS: any;
+
+function isKind(node: ts.Node, kind: string) {
+  return node.kind === ts.SyntaxKind[kind];
+}
 
 export class Rule extends Lint.Rules.AbstractRule {
   public static metadata: Lint.IRuleMetadata = {
@@ -155,6 +158,10 @@ class IndentWalker extends Lint.RuleWalker {
     return this.srcFile.getLineAndCharacterOfPosition(index);
   }
 
+  private getLine(node: ts.Node, byEndLocation: boolean = false) {
+    return this.getLineAndCharacter(node, byEndLocation).line;
+  }
+
   /**
    * Creates an error message for a line.
    *
@@ -265,19 +272,22 @@ class IndentWalker extends Lint.RuleWalker {
   private checkNodeIndent(node: ts.Node, neededIndent: number) {
     const actualIndent = this.getNodeIndent(node);
     if (
-      node.kind !== ts.SyntaxKind.ArrayLiteralExpression &&
-      node.kind !== ts.SyntaxKind.ObjectLiteralExpression &&
+      !isKind(node, 'ArrayLiteralExpression') &&
+      !isKind(node, 'ObjectLiteralExpression') &&
       (actualIndent.goodChar !== neededIndent || actualIndent.badChar !== 0) &&
       actualIndent.firstInLine
     ) {
       this.report(node, neededIndent, actualIndent.space, actualIndent.tab);
     }
 
-    if (node.kind === ts.SyntaxKind.IfStatement && node['elseStatement']) {
-      const elseKeyword = node.getChildren().filter(ch => ch.kind === ts.SyntaxKind.ElseKeyword).shift();
-      this.checkNodeIndent(elseKeyword, neededIndent);
-      if (!this.isNodeFirstInLine(node['elseStatement'])) {
-        this.checkNodeIndent(node['elseStatement'], neededIndent);
+    if (isKind(node, 'IfStatement')) {
+      const elseStatement = (node as ts.IfStatement).elseStatement;
+      if (elseStatement) {
+        const elseKeyword = node.getChildren().filter(ch => isKind(ch, 'ElseKeyword')).shift();
+        this.checkNodeIndent(elseKeyword, neededIndent);
+        if (!this.isNodeFirstInLine(elseStatement)) {
+          this.checkNodeIndent(elseStatement, neededIndent);
+        }
       }
     }
   }
@@ -292,17 +302,17 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {void}
    */
   private blockIndentationCheck(node: ts.Node) {
-
-    // Skip inline blocks
     if (this.isSingleLineNode(node)) {
       return;
     }
 
-    if (node.parent && (
-        node.parent.kind === ts.SyntaxKind.FunctionExpression ||
-        node.parent.kind === ts.SyntaxKind.FunctionDeclaration ||
-        node.parent.kind === ts.SyntaxKind.ArrowFunction
-      )) {
+    if (
+      node.parent && (
+        isKind(node.parent, 'FunctionExpression') ||
+        isKind(node.parent, 'FunctionDeclaration') ||
+        isKind(node.parent, 'ArrowFunction')
+      )
+    ) {
       this.checkIndentInFunctionBlock(node);
       return;
     }
@@ -310,10 +320,9 @@ class IndentWalker extends Lint.RuleWalker {
     let indent;
     let nodesToCheck = [];
 
-    /*
-   * For this statements we should check indent from statement beginning,
-   * not from the beginning of the block.
-   */
+    /* For these statements we should check indent from statement beginning, not from the beginning
+       of the block.
+     */
     const statementsWithProperties = [
       ts.SyntaxKind.IfStatement,
       ts.SyntaxKind.WhileStatement,
@@ -714,13 +723,13 @@ class IndentWalker extends Lint.RuleWalker {
 
   /**
    * Check to see if the first element inside an array is an object and on the same line as the node
-   * If the node is not an array then it will return false.
-   * @param {ASTNode} node node to check
-   * @returns {boolean} success/failure
    */
-  private isFirstArrayElementOnSameLine(node: ts.Node) {
-    if (node.kind === ts.SyntaxKind.ArrayLiteralExpression && node.elements[0]) {
-      return this.getLineAndCharacter(node.elements[0]).line === this.getLineAndCharacter(node).line && node.elements[0].kind === ts.SyntaxKind.ObjectLiteralExpression;
+  private isFirstArrayElementOnSameLine(node: ts.Node): boolean {
+    if (isKind(node, 'ArrayLiteralExpression')) {
+      const ele = (node as ts.ArrayLiteralExpression).elements[0];
+      if (ele) {
+        return isKind(ele, 'ObjectLiteralExpression') && this.getLine(ele) === this.getLine(node);
+      }
     }
     return false;
   }
@@ -806,7 +815,7 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodeIndent(node, indent);
   }
 
-  private visitCase(node: ts.Node) {
+  private visitCase(node: ts.CaseClause | ts.DefaultClause) {
     if (this.isSingleLineNode(node)) {
       return;
     }
