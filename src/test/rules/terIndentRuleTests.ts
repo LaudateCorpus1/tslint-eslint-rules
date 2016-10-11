@@ -31,109 +31,118 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
     {
-      code:
-      "bridge.callHandler(\n" +
-      "  'getAppVersion', 'test23', function(responseData) {\n" +
-      "    window.ah.mobileAppVersion = responseData;\n" +
-      "  }\n" +
-      ");\n",
+      code: Lint.Utils.dedent`
+        bridge.callHandler(
+          'getAppVersion', 'test23', function(responseData) {
+            window.ah.mobileAppVersion = responseData;
+          }
+        );
+        `,
       options: [2]
     },
     {
-      code:
-      "bridge.callHandler(\n" +
-      "  'getAppVersion', 'test23', function(responseData) {\n" +
-      "    window.ah.mobileAppVersion = responseData;\n" +
-      "  });\n",
+      code: Lint.Utils.dedent`
+        bridge.callHandler(
+          'getAppVersion', 'test23', function(responseData) {
+            window.ah.mobileAppVersion = responseData;
+          });
+        `,
       options: [2]
     },
     {
-      code:
-      "bridge.callHandler(\n" +
-      "  'getAppVersion',\n" +
-      "  null,\n" +
-      "  function responseCallback(responseData) {\n" +
-      "    window.ah.mobileAppVersion = responseData;\n" +
-      "  }\n" +
-      ");\n",
+      code: Lint.Utils.dedent`
+        bridge.callHandler(
+          'getAppVersion',
+          null,
+          function responseCallback(responseData) {
+            window.ah.mobileAppVersion = responseData;
+          }
+        );
+        `,
       options: [2]
     },
     {
-      code:
-      "bridge.callHandler(\n" +
-      "  'getAppVersion',\n" +
-      "  null,\n" +
-      "  function responseCallback(responseData) {\n" +
-      "    window.ah.mobileAppVersion = responseData;\n" +
-      "  });\n",
+      code: Lint.Utils.dedent`
+        bridge.callHandler(
+          'getAppVersion',
+          null,
+          function responseCallback(responseData) {
+            window.ah.mobileAppVersion = responseData;
+          });
+        `,
       options: [2]
     },
     {
-      code:
-      "function doStuff(keys) {\n" +
-      "    _.forEach(\n" +
-      "        keys,\n" +
-      "        key => {\n" +
-      "            doSomething(key);\n" +
-      "        }\n" +
-      "   );\n" +
-      "}\n",
-      options: [4],
-    },
-    {
-      code:
-      "example(\n" +
-      "    function () {\n" +
-      "        console.log('example');\n" +
-      "    }\n" +
-      ");\n",
+      code: Lint.Utils.dedent`
+        function doStuff(keys) {
+            _.forEach(
+                keys,
+                key => {
+                    doSomething(key);
+                }
+           );
+        }
+        `,
       options: [4]
     },
     {
-      code:
-      "let foo = somethingList\n" +
-      "    .filter(x => {\n" +
-      "        return x;\n" +
-      "    })\n" +
-      "    .map(x => {\n" +
-      "        return 100 * x;\n" +
-      "    });\n",
-      options: [4],
-    },
-    {
-      code:
-      "var x = 0 &&\n" +
-      "    {\n" +
-      "        a: 1,\n" +
-      "        b: 2\n" +
-      "    };",
+      code: Lint.Utils.dedent`
+        example(
+            function () {
+                console.log('example');
+            }
+        );
+        `,
       options: [4]
     },
     {
-      code:
-      "var x = 0 &&\n" +
-      "\t{\n" +
-      "\t\ta: 1,\n" +
-      "\t\tb: 2\n" +
-      "\t};",
-      options: ["tab"]
-    },
-    {
-      code:
-      "var x = 0 &&\n" +
-      "    {\n" +
-      "        a: 1,\n" +
-      "        b: 2\n" +
-      "    }||\n" +
-      "    {\n" +
-      "        c: 3,\n" +
-      "        d: 4\n" +
-      "    };",
+      code: Lint.Utils.dedent`
+        let foo = somethingList
+            .filter(x => {
+                return x;
+            })
+            .map(x => {
+                return 100 * x;
+            });
+        `,
       options: [4]
     },
     {
-      code:
-        "var x = 0 && 1;",
+      code: Lint.Utils.dedent`
+        var x = 0 &&
+            {
+                a: 1,
+                b: 2
+            };
+        `,
+      options: [4]
+    },
+    {
+      code: [
+        'var x = 0 &&',
+        '\t{',
+        '\t\ta: 1,',
+        '\t\tb: 2',
+        '\t};'
+        ].join('\n'),
+      options: ['tab']
+    },
+    {
+      code: Lint.Utils.dedent`
+        var x = 0 &&
+            {
+                a: 1,
+                b: 2
+            }||
+            {
+                c: 3,
+                d: 4
+            };
+        `,
+      options: [4]
+    },
+    {
+      code: 'var x = 0 && 1;',
       options: [4]
     },
     {
@@ -141,642 +150,653 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       options: [4]
     },
     {
-      code:
-      "var x = 0 &&\n" +
-      "    (\n" +
-      "        1\n" +
-      "    );",
+      code: Lint.Utils.dedent`
+        var x = 0 &&
+            (
+                1
+            );`,
       options: [4]
     },
     {
-      code:
-        "var x = 0 && { a: 1, b: 2 };",
+      code: 'var x = 0 && { a: 1, b: 2 };',
       options: [4]
     },
     {
-      code:
-      "require('http').request({hostname: 'localhost',\n" +
-      "                         port: 80}, function(res) {\n" +
-      "  res.end();\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        require('http').request({hostname: 'localhost',
+                                 port: 80}, function(res) {
+          res.end();
+        });
+        `,
       options: [2]
     },
     {
-      code:
-      "function test() {\n" +
-      "  return client.signUp(email, PASSWORD, { preVerified: true })\n" +
-      "    .then(function (result) {\n" +
-      "      // hi\n" +
-      "    })\n" +
-      "    .then(function () {\n" +
-      "      return FunctionalHelpers.clearBrowserState(self, {\n" +
-      "        contentServer: true,\n" +
-      "        contentServer1: true\n" +
-      "      });\n" +
-      "    });\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function test() {
+          return client.signUp(email, PASSWORD, { preVerified: true })
+            .then(function (result) {
+              // hi
+            })
+            .then(function () {
+              return FunctionalHelpers.clearBrowserState(self, {
+                contentServer: true,
+                contentServer1: true
+              });
+            });
+        }`,
       options: [2]
     },
     {
-      code:
-      "it('should... some lengthy test description that is forced to be' +\n" +
-      "  'wrapped into two lines since the line length limit is set', () => {\n" +
-      "  expect(true).toBe(true);\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        it('should... some lengthy test description that is forced to be' +
+          'wrapped into two lines since the line length limit is set', () => {
+          expect(true).toBe(true);
+        });
+        `,
       options: [2]
     },
     {
-      code:
-      "function test() {\n" +
-      "    return client.signUp(email, PASSWORD, { preVerified: true })\n" +
-      "        .then(function (result) {\n" +
-      "            var x = 1;\n" +
-      "            var y = 1;\n" +
-      "        }, function(err){\n" +
-      "            var o = 1 - 2;\n" +
-      "            var y = 1 - 2;\n" +
-      "            return true;\n" +
-      "        })\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function test() {
+            return client.signUp(email, PASSWORD, { preVerified: true })
+                .then(function (result) {
+                    var x = 1;
+                    var y = 1;
+                }, function(err){
+                    var o = 1 - 2;
+                    var y = 1 - 2;
+                    return true;
+                })
+        }`,
       options: [4]
     },
     {
-      code:
-      "function test() {\n" +
-      "    return client.signUp(email, PASSWORD, { preVerified: true })\n" +
-      "    .then(function (result) {\n" +
-      "        var x = 1;\n" +
-      "        var y = 1;\n" +
-      "    }, function(err){\n" +
-      "        var o = 1 - 2;\n" +
-      "        var y = 1 - 2;\n" +
-      "        return true;\n" +
-      "    });\n" +
-      "}",
-      options: [4, {MemberExpression: 0}]
+      code: Lint.Utils.dedent`
+        function test() {
+            return client.signUp(email, PASSWORD, { preVerified: true })
+            .then(function (result) {
+                var x = 1;
+                var y = 1;
+            }, function(err){
+                var o = 1 - 2;
+                var y = 1 - 2;
+                return true;
+            });
+        }`,
+      options: [4, { MemberExpression: 0 }]
     },
     {
-      code:
-        "// hi",
-      options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
+      code: '// hi',
+      options: [2, { VariableDeclarator: 1, SwitchCase: 1 }]
     },
     {
-      code:
-      "var Command = function() {\n" +
-      "  var fileList = [],\n" +
-      "      files = []\n" +
-      "\n" +
-      "  files.concat(fileList)\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var Command = function() {
+          var fileList = [],
+              files = []
+        
+          files.concat(fileList)
+        };
+        `,
       options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
     },
     {
-      code:
-        "  ",
+      code: '  ',
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "if(data) {\n" +
-      "  console.log('hi');\n" +
-      "  b = true;};",
+      code: Lint.Utils.dedent`
+        if(data) {
+          console.log('hi');
+          b = true;};`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "foo = () => {\n" +
-      "  console.log('hi');\n" +
-      "  return true;};",
+      code: Lint.Utils.dedent`
+        foo = () => {
+          console.log('hi');
+          return true;};`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}],
     },
     {
-      code:
-      "function test(data) {\n" +
-      "  console.log('hi');\n" +
-      "  return true;};",
+      code: Lint.Utils.dedent`
+        function test(data) {
+          console.log('hi');
+          return true;};`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var test = function(data) {\n" +
-      "  console.log('hi');\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var test = function(data) {
+          console.log('hi');
+        };`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "arr.forEach(function(data) {\n" +
-      "  otherdata.forEach(function(zero) {\n" +
-      "    console.log('hi');\n" +
-      "  }) });",
+      code: Lint.Utils.dedent`
+        arr.forEach(function(data) {
+          otherdata.forEach(function(zero) {
+            console.log('hi');
+          }) });`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "a = [\n" +
-      "    ,3\n" +
-      "]",
+      code: Lint.Utils.dedent`
+        a = [
+            ,3
+        ]`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "[\n" +
-      "  ['gzip', 'gunzip'],\n" +
-      "  ['gzip', 'unzip'],\n" +
-      "  ['deflate', 'inflate'],\n" +
-      "  ['deflateRaw', 'inflateRaw'],\n" +
-      "].forEach(function(method) {\n" +
-      "  console.log(method);\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        [
+          ['gzip', 'gunzip'],
+          ['gzip', 'unzip'],
+          ['deflate', 'inflate'],
+          ['deflateRaw', 'inflateRaw'],
+        ].forEach(function(method) {
+          console.log(method);
+        });
+        `,
       options: [2, {SwitchCase: 1, VariableDeclarator: 2}]
     },
     {
-      code:
-      "test(123, {\n" +
-      "    bye: {\n" +
-      "        hi: [1,\n" +
-      "            {\n" +
-      "                b: 2\n" +
-      "            }\n" +
-      "        ]\n" +
-      "    }\n" +
-      "});",
+      code: Lint.Utils.dedent`
+        test(123, {
+            bye: {
+                hi: [1,
+                    {
+                        b: 2
+                    }
+                ]
+            }
+        });`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var xyz = 2,\n" +
-      "    lmn = [\n" +
-      "        {\n" +
-      "            a: 1\n" +
-      "        }\n" +
-      "    ];",
+      code: Lint.Utils.dedent`
+        var xyz = 2,
+            lmn = [
+                {
+                    a: 1
+                }
+            ];`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "lmn = [{\n" +
-      "    a: 1\n" +
-      "},\n" +
-      "{\n" +
-      "    b: 2\n" +
-      "}," +
-      "{\n" +
-      "    x: 2\n" +
-      "}];",
+      code: Lint.Utils.dedent`
+        lmn = [{
+            a: 1
+        },
+        {
+            b: 2
+        
+        {
+            x: 2
+        }];`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "abc({\n" +
-      "    test: [\n" +
-      "        [\n" +
-      "            c,\n" +
-      "            xyz,\n" +
-      "            2\n" +
-      "        ].join(',')\n" +
-      "    ]\n" +
-      "});",
+      code: Lint.Utils.dedent`
+        abc({
+            test: [
+                [
+                    c,
+                    xyz,
+                    2
+                ].join(',')
+            ]
+        });`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "abc = {\n" +
-      "  test: [\n" +
-      "    [\n" +
-      "      c,\n" +
-      "      xyz,\n" +
-      "      2\n" +
-      "    ]\n" +
-      "  ]\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        abc = {
+          test: [
+            [
+              c,
+              xyz,
+              2
+            ]
+          ]
+        };`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "abc(\n" +
-      "  {\n" +
-      "    a: 1,\n" +
-      "    b: 2\n" +
-      "  }\n" +
-      ");",
+      code: Lint.Utils.dedent`
+        abc(
+          {
+            a: 1,
+            b: 2
+          }
+        );`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "abc({\n" +
-      "    a: 1,\n" +
-      "    b: 2\n" +
-      "});",
+      code: Lint.Utils.dedent`
+        abc({
+            a: 1,
+            b: 2
+        });`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var abc = \n" +
-      "  [\n" +
-      "    c,\n" +
-      "    xyz,\n" +
-      "    {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    }\n" +
-      "  ];",
+      code: Lint.Utils.dedent`
+        var abc = 
+          [
+            c,
+            xyz,
+            {
+              a: 1,
+              b: 2
+            }
+          ];`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var abc = [\n" +
-      "  c,\n" +
-      "  xyz,\n" +
-      "  {\n" +
-      "    a: 1,\n" +
-      "    b: 2\n" +
-      "  }\n" +
-      "];",
+      code: Lint.Utils.dedent`
+        var abc = [
+          c,
+          xyz,
+          {
+            a: 1,
+            b: 2
+          }
+        ];`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var abc = 5,\n" +
-      "    c = 2,\n" +
-      "    xyz = \n" +
-      "    {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    };",
+      code: Lint.Utils.dedent`
+        var abc = 5,
+            c = 2,
+            xyz = 
+            {
+              a: 1,
+              b: 2
+            };`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var abc = \n" +
-      "    {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    };",
+      code: Lint.Utils.dedent`
+        var abc = 
+            {
+              a: 1,
+              b: 2
+            };`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var a = new abc({\n" +
-      "        a: 1,\n" +
-      "        b: 2\n" +
-      "    }),\n" +
-      "    b = 2;",
+      code: Lint.Utils.dedent`
+        var a = new abc({
+                a: 1,
+                b: 2
+            }),
+            b = 2;`,
       options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var a = 2,\n" +
-      "  c = {\n" +
-      "    a: 1,\n" +
-      "    b: 2\n" +
-      "  },\n" +
-      "  b = 2;",
+      code: Lint.Utils.dedent`
+        var a = 2,
+          c = {
+            a: 1,
+            b: 2
+          },
+          b = 2;`,
       options: [2, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var x = 2,\n" +
-      "    y = {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    },\n" +
-      "    b = 2;",
+      code: Lint.Utils.dedent`
+        var x = 2,
+            y = {
+              a: 1,
+              b: 2
+            },
+            b = 2;`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var e = {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    },\n" +
-      "    b = 2;",
+      code: Lint.Utils.dedent`
+        var e = {
+              a: 1,
+              b: 2
+            },
+            b = 2;`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var a = {\n" +
-      "  a: 1,\n" +
-      "  b: 2\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var a = {
+          a: 1,
+          b: 2
+        };`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "function test() {\n" +
-      "  if (true ||\n " +
-      "            false){\n" +
-      "    console.log(val);\n" +
-      "  }\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function test() {
+          if (true ||
+                    false){
+            console.log(val);
+          }
+        }`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "for (var val in obj)\n" +
-      "  if (true)\n" +
-      "    console.log(val);",
+      code: Lint.Utils.dedent`
+        for (var val in obj)
+          if (true)
+            console.log(val);`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "if(true)\n" +
-      "  if (true)\n" +
-      "    if (true)\n" +
-      "      console.log(val);",
+      code: Lint.Utils.dedent`
+        if(true)
+          if (true)
+            if (true)
+              console.log(val);`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "function hi(){     var a = 1;\n" +
-      "  y++;                   x++;\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function hi(){     var a = 1;
+          y++;                   x++;
+        }`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "for(;length > index; index++)if(NO_HOLES || index in self){\n" +
-      "  x++;\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        for(;length > index; index++)if(NO_HOLES || index in self){
+          x++;
+        }`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "function test(){\n" +
-      "  switch(length){\n" +
-      "    case 1: return function(a){\n" +
-      "      return fn.call(that, a);\n" +
-      "    };\n" +
-      "  }\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function test(){
+          switch(length){
+            case 1: return function(a){
+              return fn.call(that, a);
+            };
+          }
+        }`,
       options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var geometry = 2,\n" +
-      "rotate = 2;",
+      code: Lint.Utils.dedent`
+        var geometry = 2,
+        rotate = 2;`,
       options: [2, {VariableDeclarator: 0}]
     },
     {
-      code:
-      "var geometry,\n" +
-      "    rotate;",
+      code: Lint.Utils.dedent`
+        var geometry,
+            rotate;`,
       options: [4, {VariableDeclarator: 1}]
     },
     {
-      code:
-      "var geometry,\n" +
-      "\trotate;",
-      options: ["tab", {VariableDeclarator: 1}]
+      code: [
+        'var geometry,',
+        '\trotate;'
+      ].join('\n'),
+      options: ['tab', {VariableDeclarator: 1}]
     },
     {
-      code:
-      "var geometry,\n" +
-      "  rotate;",
+      code: Lint.Utils.dedent`
+        var geometry,
+          rotate;`,
       options: [2, {VariableDeclarator: 1}]
     },
     {
-      code:
-      "var geometry,\n" +
-      "    rotate;",
+      code: Lint.Utils.dedent`
+        var geometry,
+            rotate;`,
       options: [2, {VariableDeclarator: 2}]
     },
     {
-      code:
-      "let geometry,\n" +
-      "    rotate;",
+      code: Lint.Utils.dedent`
+        let geometry,
+            rotate;`,
       options: [2, {VariableDeclarator: 2}],
     },
     {
-      code:
-      "const geometry = 2,\n" +
-      "    rotate = 3;",
+      code: Lint.Utils.dedent`
+        const geometry = 2,
+            rotate = 3;`,
       options: [2, {VariableDeclarator: 2}],
     },
     {
-      code:
-      "var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth,\n" +
-      "  height, rotate;",
+      code: Lint.Utils.dedent`
+        var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth,
+          height, rotate;`,
       options: [2, {SwitchCase: 1}]
     },
     {
-      code:
-        "var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth;",
+      code: Lint.Utils.dedent`
+        var geometry, box, face1, face2, colorT, colorB, sprite, padding, maxWidth;`,
       options: [2, {SwitchCase: 1}]
     },
     {
-      code:
-      "if (1 < 2){\n" +
-      "//hi sd \n" +
-      "}",
+      code: Lint.Utils.dedent`
+        if (1 < 2){
+        //hi sd
+        }`,
       options: [2]
     },
     {
-      code:
-      "while (1 < 2){\n" +
-      "  //hi sd \n" +
-      "}",
+      code: Lint.Utils.dedent`
+        while (1 < 2){
+          //hi sd
+        }`,
       options: [2]
     },
     {
-      code:
-        "while (1 < 2) console.log('hi');",
+      code: Lint.Utils.dedent`
+        while (1 < 2) console.log('hi');`,
       options: [2]
     },
     {
-      code:
-      "[a, b, \nc].forEach((index) => {\n" +
-      "    index;\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        [a, b, 
+        c].forEach((index) => {
+            index;
+        });
+        `,
       options: [4],
     },
     {
-      code:
-      "[a, b, \nc].forEach(function(index){\n" +
-      "    return index;\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        [a, b, 
+        c].forEach(function(index){
+            return index;
+        });
+        `,
       options: [4],
     },
     {
-      code:
-      "[a, b, c].forEach((index) => {\n" +
-      "    index;\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        [a, b, c].forEach((index) => {
+            index;
+        });
+        `,
       options: [4],
     },
     {
-      code:
-      "[a, b, c].forEach(function(index){\n" +
-      "    return index;\n" +
-      "});\n",
+      code: Lint.Utils.dedent`
+        [a, b, c].forEach(function(index){
+            return index;
+        });
+        `,
       options: [4],
     },
     {
-      code:
-      "switch (x) {\n" +
-      "    case \"foo\":\n" +
-      "        a();\n" +
-      "        break;\n" +
-      "    case \"bar\":\n" +
-      "        switch (y) {\n" +
-      "            case \"1\":\n" +
-      "                break;\n" +
-      "            case \"2\":\n" +
-      "                a = 6;\n" +
-      "                break;\n" +
-      "        }\n" +
-      "    case \"test\":\n" +
-      "        break;\n" +
-      "}",
-      options: [4, {SwitchCase: 1}]
+      code: Lint.Utils.dedent`
+        switch (x) {
+            case "foo":
+                a();
+                break;
+            case "bar":
+                switch (y) {
+                    case "1":
+                        break;
+                    case "2":
+                        a = 6;
+                        break;
+                }
+            case "test":
+                break;
+        }`,
+      options: [4, { SwitchCase: 1 }]
     },
     {
-      code:
-      "switch (x) {\n" +
-      "        case \"foo\":\n" +
-      "            a();\n" +
-      "            break;\n" +
-      "        case \"bar\":\n" +
-      "            switch (y) {\n" +
-      "                    case \"1\":\n" +
-      "                        break;\n" +
-      "                    case \"2\":\n" +
-      "                        a = 6;\n" +
-      "                        break;\n" +
-      "            }\n" +
-      "        case \"test\":\n" +
-      "            break;\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        switch (x) {
+                case "foo":
+                    a();
+                    break;
+                case "bar":
+                    switch (y) {
+                            case "1":
+                                break;
+                            case "2":
+                                a = 6;
+                                break;
+                    }
+                case "test":
+                    break;
+        }`,
       options: [4, {SwitchCase: 2}]
     },
     {
-      code:
-      "switch (a) {\n" +
-      "case \"foo\":\n" +
-      "    a();\n" +
-      "    break;\n" +
-      "case \"bar\":\n" +
-      "    switch(x){\n" +
-      "    case '1':\n" +
-      "        break;\n" +
-      "    case '2':\n" +
-      "        a = 6;\n" +
-      "        break;\n" +
-      "    }\n" +
-      "}"
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case 'foo':
+            a();
+            break;
+        case 'bar':
+            switch(x){
+            case '1':
+                break;
+            case '2':
+                a = 6;
+                break;
+            }
+        }`
     },
     {
-      code:
-      "switch (a) {\n" +
-      "case \"foo\":\n" +
-      "    a();\n" +
-      "    break;\n" +
-      "case \"bar\":\n" +
-      "    if(x){\n" +
-      "        a = 2;\n" +
-      "    }\n" +
-      "    else{\n" +
-      "        a = 6;\n" +
-      "    }\n" +
-      "}"
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case 'foo':
+            a();
+            break;
+        case 'bar':
+            if(x){
+                a = 2;
+            }
+            else{
+                a = 6;
+            }
+        }`
     },
     {
-      code:
-      "switch (a) {\n" +
-      "case \"foo\":\n" +
-      "    a();\n" +
-      "    break;\n" +
-      "case \"bar\":\n" +
-      "    if(x){\n" +
-      "        a = 2;\n" +
-      "    }\n" +
-      "    else\n" +
-      "        a = 6;\n" +
-      "}"
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case "foo":
+            a();
+            break;
+        case "bar":
+            if(x){
+                a = 2;
+            }
+            else
+                a = 6;
+        }`
     },
     {
-      code:
-      "switch (a) {\n" +
-      "case \"foo\":\n" +
-      "    a();\n" +
-      "    break;\n" +
-      "case \"bar\":\n" +
-      "    a(); break;\n" +
-      "case \"baz\":\n" +
-      "    a(); break;\n" +
-      "}"
+      code: Lint.Utils.dedent`
+        switch (a) {
+        case "foo":
+            a();
+            break;
+        case "bar":
+            a(); break;
+        case "baz":
+            a(); break;
+        }`
     },
     {
-      code: "switch (0) {\n}"
+      code: 'switch (0) {\n}'
     },
     {
-      code:
-      "function foo() {\n" +
-      "    var a = \"a\";\n" +
-      "    switch(a) {\n" +
-      "    case \"a\":\n" +
-      "        return \"A\";\n" +
-      "    case \"b\":\n" +
-      "        return \"B\";\n" +
-      "    }\n" +
-      "}\n" +
-      "foo();"
+      code: Lint.Utils.dedent`
+        function foo() {
+            var a = "a";
+            switch(a) {
+            case "a":
+                return "A";
+            case "b":
+                return "B";
+            }
+        }
+        foo();`
     },
     {
-      code:
-      "switch(value){\n" +
-      "    case \"1\":\n" +
-      "    case \"2\":\n" +
-      "        a();\n" +
-      "        break;\n" +
-      "    default:\n" +
-      "        a();\n" +
-      "        break;\n" +
-      "}\n" +
-      "switch(value){\n" +
-      "    case \"1\":\n" +
-      "        a();\n" +
-      "        break;\n" +
-      "    case \"2\":\n" +
-      "        break;\n" +
-      "    default:\n" +
-      "        break;\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        switch(value){
+            case "1":
+            case "2":
+                a();
+                break;
+            default:
+                a();
+                break;
+        }
+        switch(value){
+            case "1":
+                a();
+                break;
+            case "2":
+                break;
+            default:
+                break;
+        }`,
       options: [4, {SwitchCase: 1}]
     },
     {
-      code:
-      "var obj = {foo: 1, bar: 2};\n" +
-      "with (obj) {\n" +
-      "    console.log(foo + bar);\n" +
-      "}\n"
+      code: Lint.Utils.dedent`
+        var obj = {foo: 1, bar: 2};
+        with (obj) {
+            console.log(foo + bar);
+        }
+        `
     },
     {
-      code:
-      "if (a) {\n" +
-      "    (1 + 2 + 3);\n" + // no error on this line
-      "}"
+      code: [
+        'if (a) {',
+        '    (1 + 2 + 3);', // no error on this line
+        '}'
+      ].join('\n')
     },
     {
-      code:
-        "switch(value){ default: a(); break; }\n"
+      code: 'switch(value){ default: a(); break; }\n'
     },
     {
       code: "import {addons} from 'react/addons'\nimport React from 'react'",
       options: [2],
     },
     {
-      code:
-      "var a = 1,\n" +
-      "    b = 2,\n" +
-      "    c = 3;\n",
+      code: Lint.Utils.dedent`
+        var a = 1,
+            b = 2,
+            c = 3;
+        `,
       options: [4]
     },
     {
-      code:
-      "var a = 1\n" +
-      "   ,b = 2\n" +
-      "   ,c = 3;\n",
+      code: Lint.Utils.dedent`
+        var a = 1
+           ,b = 2
+           ,c = 3;
+        `,
       options: [4]
     },
     {
@@ -784,759 +804,780 @@ const scripts: { valid: IScripts, invalid: IScripts } = {
       options: [2]
     },
     {
-      code:
-      "function salutation () {\n" +
-      "  switch (1) {\n" +
-      "    case 0: return console.log('hi')\n" +
-      "    case 1: return console.log('hey')\n" +
-      "  }\n" +
-      "}\n",
+      code: Lint.Utils.dedent`
+        function salutation () {
+          switch (1) {
+            case 0: return console.log('hi')
+            case 1: return console.log('hey')
+          }
+        }
+        `,
       options: [2, { SwitchCase: 1 }]
     },
     {
-      code:
-      "var items = [\n" +
-      "  {\n" +
-      "    foo: 'bar'\n" +
-      "  }\n" +
-      "];\n",
-      options: [2, {VariableDeclarator: 2}]
+      code: Lint.Utils.dedent`
+        var items = [
+          {
+            foo: 'bar'
+          }
+        ];
+        `,
+      options: [2, { VariableDeclarator: 2 }]
     },
     {
-      code:
-      "const a = 1,\n" +
-      "      b = 2;\n" +
-      "const items1 = [\n" +
-      "  {\n" +
-      "    foo: 'bar'\n" +
-      "  }\n" +
-      "];\n" +
-      "const items2 = Items(\n" +
-      "  {\n" +
-      "    foo: 'bar'\n" +
-      "  }\n" +
-      ");\n",
-      options: [2, {VariableDeclarator: 3}],
+      code: Lint.Utils.dedent`
+        const a = 1,
+              b = 2;
+        const items1 = [
+          {
+            foo: 'bar'
+          }
+        ];
+        const items2 = Items(
+          {
+            foo: 'bar'
+          }
+        );
+        `,
+      options: [2, { VariableDeclarator: 3 }],
 
     },
     {
-      code:
-      "const geometry = 2,\n" +
-      "      rotate = 3;\n" +
-      "var a = 1,\n" +
-      "  b = 2;\n" +
-      "let light = true,\n" +
-      "    shadow = false;",
+      code: Lint.Utils.dedent`
+        const geometry = 2,
+              rotate = 3;
+        var a = 1,
+          b = 2;
+        let light = true,
+            shadow = false;`,
       options: [2, { VariableDeclarator: { const: 3, let: 2 } }],
     },
     {
-      code:
-      "const abc = 5,\n" +
-      "      c = 2,\n" +
-      "      xyz = \n" +
-      "      {\n" +
-      "        a: 1,\n" +
-      "        b: 2\n" +
-      "      };\n" +
-      "let abc = 5,\n" +
-      "  c = 2,\n" +
-      "  xyz = \n" +
-      "  {\n" +
-      "    a: 1,\n" +
-      "    b: 2\n" +
-      "  };\n" +
-      "var abc = 5,\n" +
-      "    c = 2,\n" +
-      "    xyz = \n" +
-      "    {\n" +
-      "      a: 1,\n" +
-      "      b: 2\n" +
-      "    };\n",
+      code: Lint.Utils.dedent`
+        const abc = 5,
+              c = 2,
+              xyz =
+              {
+                a: 1,
+                b: 2
+              };
+        let abc = 5,
+          c = 2,
+          xyz =
+          {
+            a: 1,
+            b: 2
+          };
+        var abc = 5,
+            c = 2,
+            xyz =
+            {
+              a: 1,
+              b: 2
+            };
+        `,
       options: [2, { VariableDeclarator: { var: 2, const: 3 }, SwitchCase: 1}],
     },
     {
-      code:
-      "module.exports =\n" +
-      "{\n" +
-      "  'Unit tests':\n" +
-      "  {\n" +
-      "    rootPath: './',\n" +
-      "    environment: 'node',\n" +
-      "    tests:\n" +
-      "    [\n" +
-      "      'test/test-*.js'\n" +
-      "    ],\n" +
-      "    sources:\n" +
-      "    [\n" +
-      "      '*.js',\n" +
-      "      'test/**.js'\n" +
-      "    ]\n" +
-      "  }\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        module.exports =
+        {
+          'Unit tests':
+          {
+            rootPath: './',
+            environment: 'node',
+            tests:
+            [
+              'test/test-*.js'
+            ],
+            sources:
+            [
+              '*.js',
+              'test/**.js'
+            ]
+          }
+        };`,
       options: [2]
     },
     {
-      code:
-      "var path     = require('path')\n" +
-      "  , crypto    = require('crypto')\n" +
-      "  ;\n",
+      code: Lint.Utils.dedent`
+        var path     = require('path')
+          , crypto    = require('crypto')
+          ;
+        `,
       options: [2]
     },
     {
-      code:
-      "var a = 1\n" +
-      "   ,b = 2\n" +
-      "   ;"
+      code: Lint.Utils.dedent`
+        var a = 1
+           ,b = 2
+           ;`
     },
     {
-      code:
-      "export function create (some,\n" +
-      "                        argument) {\n" +
-      "  return Object.create({\n" +
-      "    a: some,\n" +
-      "    b: argument\n" +
-      "  });\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        export function create (some,
+                                argument) {
+          return Object.create({
+            a: some,
+            b: argument
+          });
+        };`,
       options: [2]
     },
     {
-      code:
-      "export function create (id, xfilter, rawType,\n" +
-      "                        width=defaultWidth, height=defaultHeight,\n" +
-      "                        footerHeight=defaultFooterHeight,\n" +
-      "                        padding=defaultPadding) {\n" +
-      "  // ... function body, indented two spaces\n" +
-      "}\n",
+      code: Lint.Utils.dedent`
+        export function create (id, xfilter, rawType,
+                                width=defaultWidth, height=defaultHeight,
+                                footerHeight=defaultFooterHeight,
+                                padding=defaultPadding) {
+          // ... function body, indented two spaces
+        }
+        `,
       options: [2]
     },
     {
-      code:
-      "var obj = {\n" +
-      "  foo: function () {\n" +
-      "    return new p()\n" +
-      "      .then(function (ok) {\n" +
-      "        return ok;\n" +
-      "      }, function () {\n" +
-      "        // ignore things\n" +
-      "      });\n" +
-      "  }\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var obj = {
+          foo: function () {
+            return new p()
+              .then(function (ok) {
+                return ok;
+              }, function () {
+                // ignore things
+              });
+          }
+        };
+        `,
       options: [2]
     },
     {
-      code:
-      "a.b()\n" +
-      "  .c(function(){\n" +
-      "    var a;\n" +
-      "  }).d.e;\n",
+      code: Lint.Utils.dedent`
+        a.b()
+          .c(function(){
+            var a;
+          }).d.e;
+        `,
       options: [2]
     },
     {
-      code:
-      "const YO = 'bah',\n" +
-      "      TE = 'mah'\n" +
-      "\n" +
-      "var res,\n" +
-      "    a = 5,\n" +
-      "    b = 4\n",
+      code: Lint.Utils.dedent`
+        const YO = 'bah',
+              TE = 'mah'
+
+        var res,
+            a = 5,
+            b = 4
+        `,
       options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
     },
     {
-      code:
-      "const YO = 'bah',\n" +
-      "      TE = 'mah'\n" +
-      "\n" +
-      "var res,\n" +
-      "    a = 5,\n" +
-      "    b = 4\n" +
-      "\n" +
-      "if (YO) console.log(TE)",
+      code: Lint.Utils.dedent`
+        const YO = 'bah',
+              TE = 'mah'
+
+        var res,
+            a = 5,
+            b = 4
+
+        if (YO) console.log(TE)`,
       options: [2, {VariableDeclarator: { var: 2, let: 2, const: 3}}]
     },
     {
-      code:
-      "var foo = 'foo',\n" +
-      "  bar = 'bar',\n" +
-      "  baz = function() {\n" +
-      "      \n" +
-      "  }\n" +
-      "\n" +
-      "function hello () {\n" +
-      "    \n" +
-      "}\n",
+      code: Lint.Utils.dedent`
+        var foo = 'foo',
+          bar = 'bar',
+          baz = function() {
+
+          }
+
+        function hello () {
+
+        }
+        `,
       options: [2]
     },
     {
-      code:
-      "var obj = {\n" +
-      "  send: function () {\n" +
-      "    return P.resolve({\n" +
-      "      type: 'POST'\n" +
-      "    })\n" +
-      "      .then(function () {\n" +
-      "        return true;\n" +
-      "      }, function () {\n" +
-      "        return false;\n" +
-      "      });\n" +
-      "  }\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var obj = {
+          send: function () {
+            return P.resolve({
+              type: 'POST'
+            })
+              .then(function () {
+                return true;
+              }, function () {
+                return false;
+              });
+          }
+        };
+        `,
       options: [2]
     },
     {
-      code:
-      "var obj = {\n" +
-      "  send: function () {\n" +
-      "    return P.resolve({\n" +
-      "      type: 'POST'\n" +
-      "    })\n" +
-      "    .then(function () {\n" +
-      "      return true;\n" +
-      "    }, function () {\n" +
-      "      return false;\n" +
-      "    });\n" +
-      "  }\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var obj = {
+          send: function () {
+            return P.resolve({
+              type: 'POST'
+            })
+            .then(function () {
+              return true;
+            }, function () {
+              return false;
+            });
+          }
+        };
+        `,
       options: [2, {MemberExpression: 0}]
     },
     {
-      code:
-      "const someOtherFunction = argument => {\n" +
-      "        console.log(argument);\n" +
-      "    },\n" +
-      "    someOtherValue = 'someOtherValue';\n",
+      code: Lint.Utils.dedent`
+        const someOtherFunction = argument => {
+                console.log(argument);
+            },
+            someOtherValue = 'someOtherValue';
+        `,
     },
     {
-      code:
-      "[\n" +
-      "  'a',\n" +
-      "  'b'\n" +
-      "].sort().should.deepEqual([\n" +
-      "  'x',\n" +
-      "  'y'\n" +
-      "]);\n",
+      code: Lint.Utils.dedent`
+        [
+          'a',
+          'b'
+        ].sort().should.deepEqual([
+          'x',
+          'y'
+        ]);
+        `,
       options: [2]
     },
     {
-      code:
-      "var a = 1,\n" +
-      "    B = class {\n" +
-      "      constructor(){}\n" +
-      "      a(){}\n" +
-      "      get b(){}\n" +
-      "    };",
-      options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
+      code: Lint.Utils.dedent`
+        var a = 1,
+            B = class {
+              constructor(){}
+              a(){}
+              get b(){}
+            };`,
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "var a = 1,\n" +
-      "    B = \n" +
-      "    class {\n" +
-      "      constructor(){}\n" +
-      "      a(){}\n" +
-      "      get b(){}\n" +
-      "    },\n" +
-      "    c = 3;",
-      options: [2, {VariableDeclarator: 2, SwitchCase: 1}],
+      code: Lint.Utils.dedent`
+        var a = 1,
+            B =
+            class {
+              constructor(){}
+              a(){}
+              get b(){}
+            },
+            c = 3;`,
+      options: [2, {VariableDeclarator: 2, SwitchCase: 1}]
     },
     {
-      code:
-      "class A{\n" +
-      "    constructor(){}\n" +
-      "    a(){}\n" +
-      "    get b(){}\n" +
-      "}",
-      options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
+      code: Lint.Utils.dedent`
+        class A{
+            constructor(){}
+            a(){}
+            get b(){}
+        }`,
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var A = class {\n" +
-      "    constructor(){}\n" +
-      "    a(){}\n" +
-      "    get b(){}\n" +
-      "}",
-      options: [4, {VariableDeclarator: 1, SwitchCase: 1}],
+      code: Lint.Utils.dedent`
+        var A = class {
+            constructor(){}
+            a(){}
+            get b(){}
+        }`,
+      options: [4, {VariableDeclarator: 1, SwitchCase: 1}]
     },
     {
-      code:
-      "var a = {\n" +
-      "  some: 1\n" +
-      ", name: 2\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var a = {
+          some: 1
+        , name: 2
+        };
+        `,
       options: [2]
     },
     {
-      code:
-      "a.c = {\n" +
-      "    aa: function() {\n" +
-      "        'test1';\n" +
-      "        return 'aa';\n" +
-      "    }\n" +
-      "    , bb: function() {\n" +
-      "        return this.bb();\n" +
-      "    }\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        a.c = {
+            aa: function() {
+                'test1';
+                return 'aa';
+            }
+            , bb: function() {
+                return this.bb();
+            }
+        };
+        `,
       options: [4]
     },
     {
-      code:
-      "var a =\n" +
-      "{\n" +
-      "    actions:\n" +
-      "    [\n" +
-      "        {\n" +
-      "            name: 'compile'\n" +
-      "        }\n" +
-      "    ]\n" +
-      "};\n",
+      code: Lint.Utils.dedent`
+        var a =
+        {
+            actions:
+            [
+                {
+                    name: 'compile'
+                }
+            ]
+        };
+        `,
       options: [4, {VariableDeclarator: 0, SwitchCase: 1}]
     },
     {
-      code:
-      "var a =\n" +
-      "[\n" +
-      "    {\n" +
-      "        name: 'compile'\n" +
-      "    }\n" +
-      "];\n",
+      code: Lint.Utils.dedent`
+        var a =
+        [
+            {
+                name: 'compile'
+            }
+        ];
+        `,
       options: [4, {VariableDeclarator: 0, SwitchCase: 1}]
     },
     {
-      code:
-      "const func = function (opts) {\n" +
-      "    return Promise.resolve()\n" +
-      "    .then(() => {\n" +
-      "        [\n" +
-      "            'ONE', 'TWO'\n" +
-      "        ].forEach(command => { doSomething(); });\n" +
-      "    });\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        const func = function (opts) {
+            return Promise.resolve()
+            .then(() => {
+                [
+                    'ONE', 'TWO'
+                ].forEach(command => { doSomething(); });
+            });
+        };`,
       options: [4, {MemberExpression: 0}]
     },
     {
-      code:
-      "const func = function (opts) {\n" +
-      "    return Promise.resolve()\n" +
-      "        .then(() => {\n" +
-      "            [\n" +
-      "                'ONE', 'TWO'\n" +
-      "            ].forEach(command => { doSomething(); });\n" +
-      "        });\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        const func = function (opts) {
+            return Promise.resolve()
+                .then(() => {
+                    [
+                        'ONE', 'TWO'
+                    ].forEach(command => { doSomething(); });
+                });
+        };`,
       options: [4]
     },
     {
-      code:
-      "var haveFun = function () {\n" +
-      "    SillyFunction(\n" +
-      "        {\n" +
-      "            value: true,\n" +
-      "        },\n" +
-      "        {\n" +
-      "            _id: true,\n" +
-      "        }\n" +
-      "    );\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var haveFun = function () {
+            SillyFunction(
+                {
+                    value: true,
+                },
+                {
+                    _id: true,
+                }
+            );
+        };`,
       options: [4]
     },
     {
-      code:
-      "var haveFun = function () {\n" +
-      "    new SillyFunction(\n" +
-      "        {\n" +
-      "            value: true,\n" +
-      "        },\n" +
-      "        {\n" +
-      "            _id: true,\n" +
-      "        }\n" +
-      "    );\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var haveFun = function () {
+            new SillyFunction(
+                {
+                    value: true,
+                },
+                {
+                    _id: true,
+                }
+            );
+        };`,
       options: [4]
     },
     {
-      code:
-      "let object1 = {\n" +
-      "  doThing() {\n" +
-      "    return _.chain([])\n" +
-      "      .map(v => (\n" +
-      "        {\n" +
-      "          value: true,\n" +
-      "        }\n" +
-      "      ))\n" +
-      "      .value();\n" +
-      "  }\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        let object1 = {
+          doThing() {
+            return _.chain([])
+              .map(v => (
+                {
+                  value: true,
+                }
+              ))
+              .value();
+          }
+        };`,
       options: [2]
     },
     {
-      code:
-      "class Foo\n" +
-      "  extends Bar {\n" +
-      "  baz() {}\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        class Foo
+          extends Bar {
+          baz() {}
+        }`,
       options: [2]
     },
     {
-      code:
-      "class Foo extends\n" +
-      "  Bar {\n" +
-      "  baz() {}\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        class Foo extends
+          Bar {
+          baz() {}
+        }`,
       options: [2]
     },
     {
-      code:
-      "fs.readdirSync(path.join(__dirname, '../rules')).forEach(name => {\n" +
-      "  files[name] = foo;\n" +
-      "});",
+      code: Lint.Utils.dedent`
+        fs.readdirSync(path.join(__dirname, '../rules')).forEach(name => {
+          files[name] = foo;
+        });`,
       options: [2, { outerIIFEBody: 0 }],
     },
     {
-      code:
-      "(function(){\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "})();",
+      code: Lint.Utils.dedent`
+        (function(){
+        function foo(x) {
+          return x + 1;
+        }
+        })();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "(function(){\n" +
-      "        function foo(x) {\n" +
-      "            return x + 1;\n" +
-      "        }\n" +
-      "})();",
+      code: Lint.Utils.dedent`
+        (function(){
+                function foo(x) {
+                    return x + 1;
+                }
+        })();`,
       options: [4, { outerIIFEBody: 2 }]
     },
     {
-      code:
-      "(function(x, y){\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "})(1, 2);",
+      code: Lint.Utils.dedent`
+        (function(x, y){
+        function foo(x) {
+          return x + 1;
+        }
+        })(1, 2);`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "(function(){\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "}());",
+      code: Lint.Utils.dedent`
+        (function(){
+        function foo(x) {
+          return x + 1;
+        }
+        }());`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "!function(){\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "}();",
+      code: Lint.Utils.dedent`
+        !function(){
+        function foo(x) {
+          return x + 1;
+        }
+        }();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "!function(){\n" +
-      "\t\t\tfunction foo(x) {\n" +
-      "\t\t\t\treturn x + 1;\n" +
-      "\t\t\t}\n" +
-      "}();",
-      options: ["tab", { outerIIFEBody: 3 }]
+      code: [
+        '!function(){',
+        '\t\t\tfunction foo(x) {',
+        '\t\t\t\treturn x + 1;',
+        '\t\t\t}',
+        '}();'
+      ].join('\n'),
+      options: ['tab', { outerIIFEBody: 3 }]
     },
     {
-      code:
-      "var out = function(){\n" +
-      "  function fooVar(x) {\n" +
-      "    return x + 1;\n" +
-      "  }\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var out = function(){
+          function fooVar(x) {
+            return x + 1;
+          }
+        };`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "var ns = function(){\n" +
-      "function fooVar(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "}();",
+      code: Lint.Utils.dedent`
+        var ns = function(){
+        function fooVar(x) {
+          return x + 1;
+        }
+        }();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "ns = function(){\n" +
-      "function fooVar(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "}();",
+      code: Lint.Utils.dedent`
+        ns = function(){
+        function fooVar(x) {
+          return x + 1;
+        }
+        }();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "var ns = (function(){\n" +
-      "function fooVar(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "}(x));",
+      code: Lint.Utils.dedent`
+        var ns = (function(){
+        function fooVar(x) {
+          return x + 1;
+        }
+        }(x));`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "var ns = (function(){\n" +
-      "        function fooVar(x) {\n" +
-      "            return x + 1;\n" +
-      "        }\n" +
-      "}(x));",
+      code: Lint.Utils.dedent`
+        var ns = (function(){
+                function fooVar(x) {
+                    return x + 1;
+                }
+        }(x));`,
       options: [4, { outerIIFEBody: 2 }]
     },
     {
-      code:
-      "var obj = {\n" +
-      "  foo: function() {\n" +
-      "    return true;\n" +
-      "  }\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        var obj = {
+          foo: function() {
+            return true;
+          }
+        };`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "while (\n" +
-      "  function() {\n" +
-      "    return true;\n" +
-      "  }()) {\n" +
-      "\n" +
-      "  x = x + 1;\n" +
-      "};",
+      code: Lint.Utils.dedent`
+        while (
+          function() {
+            return true;
+          }()) {
+
+          x = x + 1;
+        };`,
       options: [2, { outerIIFEBody: 20 }]
     },
     {
-      code:
-      "(() => {\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "})();",
+      code: Lint.Utils.dedent`
+        (() => {
+        function foo(x) {
+          return x + 1;
+        }
+        })();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "function foo() {\n" +
-      "}",
-      options: ["tab", { outerIIFEBody: 0 }]
+      code: Lint.Utils.dedent`
+        function foo() {
+        }`,
+      options: ['tab', { outerIIFEBody: 0 }]
     },
     {
-      code:
-      ";(() => {\n" +
-      "function foo(x) {\n" +
-      "  return x + 1;\n" +
-      "}\n" +
-      "})();",
+      code: Lint.Utils.dedent`
+        ;(() => {
+        function foo(x) {
+          return x + 1;
+        }
+        })();`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-      "if(data) {\n" +
-      "  console.log('hi');\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        if(data) {
+          console.log('hi');
+        }`,
       options: [2, { outerIIFEBody: 0 }]
     },
     {
-      code:
-        "Buffer.length",
+      code: Lint.Utils.dedent`
+        Buffer.length`,
       options: [4, { MemberExpression: 1 }]
     },
     {
-      code:
-      "Buffer\n" +
-      "    .indexOf('a')\n" +
-      "    .toString()",
+      code: Lint.Utils.dedent`
+        Buffer
+            .indexOf('a')
+            .toString()`,
       options: [4, { MemberExpression: 1 }]
     },
     {
-      code:
-      "Buffer.\n" +
-      "    length",
+      code: Lint.Utils.dedent`
+        Buffer.
+            length`,
       options: [4, { MemberExpression: 1 }]
     },
     {
-      code:
-      "Buffer\n" +
-      "    .foo\n" +
-      "    .bar",
+      code: Lint.Utils.dedent`
+        Buffer
+            .foo
+            .bar`,
       options: [4, { MemberExpression: 1 }]
     },
     {
-      code:
-      "Buffer\n" +
-      "\t.foo\n" +
-      "\t.bar",
-      options: ["tab", { MemberExpression: 1 }]
+      code: [
+        'Buffer',
+        '\t.foo',
+        '\t.bar'
+      ].join('\n'),
+      options: ['tab', { MemberExpression: 1 }]
     },
     {
-      code:
-      "Buffer\n" +
-      "    .foo\n" +
-      "    .bar",
+      code: Lint.Utils.dedent`
+        Buffer
+            .foo
+            .bar`,
       options: [2, {MemberExpression: 2}]
     },
     {
-      code:
-      "MemberExpression\n" +
-      ".is" +
-      "  .off" +
-      "    .by" +
-      " .default();",
+      code: Lint.Utils.dedent`
+        MemberExpression
+        .
+          .o
+            .
+         .default();`,
       options: [4]
     },
     {
-      code:
-      "foo = bar.baz()\n" +
-      "        .bip();",
+      code: Lint.Utils.dedent`
+        foo = bar.baz()
+                .bip();`,
       options: [4, {MemberExpression: 1}]
     },
     {
-      code:
-      "if (foo) {\n" +
-      "  bar();\n" +
-      "} else if (baz) {\n" +
-      "  foobar();\n" +
-      "} else if (qux) {\n" +
-      "  qux();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        if (foo) {
+          bar();
+        } else if (baz) {
+          foobar();
+        } else if (qux) {
+          qux();
+        }`,
       options: [2]
     },
     {
-      code:
-      "function foo(aaa,\n" +
-      "  bbb, ccc, ddd) {\n" +
-      "    bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+          bbb, ccc, ddd) {
+            bar();
+        }`,
       options: [2, {FunctionDeclaration: {parameters: 1, body: 2}}]
     },
     {
-      code:
-      "function foo(aaa, bbb,\n" +
-      "      ccc, ddd) {\n" +
-      "  bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo(aaa, bbb,
+              ccc, ddd) {
+          bar();
+        }`,
       options: [2, {FunctionDeclaration: {parameters: 3, body: 1}}]
     },
     {
-      code:
-      "function foo(aaa,\n" +
-      "    bbb,\n" +
-      "    ccc) {\n" +
-      "            bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+            bbb,
+            ccc) {
+                    bar();
+        }`,
       options: [4, {FunctionDeclaration: {parameters: 1, body: 3}}]
     },
     {
-      code:
-      "function foo(aaa,\n" +
-      "             bbb, ccc,\n" +
-      "             ddd, eee, fff) {\n" +
-      "  bar();\n" +
-      "}",
-      options: [2, {FunctionDeclaration: {parameters: "first", body: 1}}]
+      code: Lint.Utils.dedent`
+        function foo(aaa,
+                     bbb, ccc,
+                     ddd, eee, fff) {
+          bar();
+        }`,
+      options: [2, {FunctionDeclaration: {parameters: 'first', body: 1}}]
     },
     {
-      code:
-      "function foo(aaa, bbb)\n" +
-      "{\n" +
-      "      bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo(aaa, bbb)
+        {
+              bar();
+        }`,
       options: [2, {FunctionDeclaration: {body: 3}}] // FIXME: what is the default for `parameters`?
     },
     {
-      code:
-      "function foo(\n" +
-      "  aaa,\n" +
-      "  bbb) {\n" +
-      "    bar();\n" +
-      "}",
-      options: [2, {FunctionDeclaration: {parameters: "first", body: 2}}] // FIXME: make sure this is correct
+      code: Lint.Utils.dedent`
+        function foo(
+          aaa,
+          bbb) {
+            bar();
+        }`,
+      options: [2, {FunctionDeclaration: {parameters: 'first', body: 2}}] // FIXME: make sure this is correct
     },
     {
-      code:
-      "var foo = function(aaa,\n" +
-      "    bbb,\n" +
-      "    ccc,\n" +
-      "    ddd) {\n" +
-      "bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+            bbb,
+            ccc,
+            ddd) {
+        bar();
+        }`,
       options: [2, {FunctionExpression: {parameters: 2, body: 0}}]
     },
     {
-      code:
-      "var foo = function(aaa,\n" +
-      "  bbb,\n" +
-      "  ccc) {\n" +
-      "                    bar();\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+          bbb,
+          ccc) {
+                            bar();
+        }`,
       options: [2, {FunctionExpression: {parameters: 1, body: 10}}]
     },
-    //---
     {
-      code:
-      "var foo = function(aaa,\n" +
-      "                   bbb, ccc, ddd,\n" +
-      "                   eee, fff) {\n" +
-      "    bar();\n" +
-      "}",
-      options: [4, {FunctionExpression: {parameters: "first", body: 1}}]
+      code: Lint.Utils.dedent`
+        var foo = function(aaa,
+                           bbb, ccc, ddd,
+                           eee, fff) {
+            bar();
+        }`,
+      options: [4, {FunctionExpression: {parameters: 'first', body: 1}}]
     },
     {
-      code:
-      "var foo = function(\n" +
-      "  aaa, bbb, ccc,\n" +
-      "  ddd, eee) {\n" +
-      "      bar();\n" +
-      "}",
-      options: [2, {FunctionExpression: {parameters: "first", body: 3}}] // FIXME: make sure this is correct
+      code: Lint.Utils.dedent`
+        var foo = function(
+          aaa, bbb, ccc,
+          ddd, eee) {
+              bar();
+        }`,
+      options: [2, {FunctionExpression: {parameters: 'first', body: 3}}] // FIXME: make sure this is correct
     },
     {
-      code:
-      "function foo() {\n" +
-      "  bar();\n" +
-      "  \tbaz();\n" +
-      "\t   \t\t\t  \t\t\t  \t   \tqux();\n" +
-      "}",
+      code: [
+        'function foo() {',
+        '  bar();',
+        '  \tbaz();',
+        '\t   \t\t\t  \t\t\t  \t   \tqux();',
+        '}'
+      ].join('\n'),
       options: [2]
     },
     {
-      code:
-      "function foo() {\n" +
-      "  function bar() {\n" +
-      "    baz();\n" +
-      "  }\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo() {
+          function bar() {
+            baz();
+          }
+        }`,
       options: [2, {FunctionDeclaration: {body: 1}}]
     },
     {
-      code:
-      "function foo() {\n" +
-      "  bar();\n" +
-      "   \t\t}",
+      code: [
+        'function foo() {',
+        '  bar();',
+        '   \t\t}'
+      ].join('\n'),
       options: [2]
     },
     {
-      code:
-      "function foo() {\n" +
-      "  function bar(baz,\n" +
-      "      qux) {\n" +
-      "    foobar();\n" +
-      "  }\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo() {
+          function bar(baz,
+              qux) {
+            foobar();
+          }
+        }`,
       options: [2, {FunctionDeclaration: {body: 1, parameters: 2}}]
     },
     {
-      code:
-      "function foo() {\n" +
-      "  var bar = function(baz,\n" +
-      "        qux) {\n" +
-      "    foobar();\n" +
-      "  };\n" +
-      "}",
+      code: Lint.Utils.dedent`
+        function foo() {
+          var bar = function(baz,
+                qux) {
+            foobar();
+          };
+        }`,
       options: [2, {FunctionExpression: {parameters: 3}}]
     }
   ],
