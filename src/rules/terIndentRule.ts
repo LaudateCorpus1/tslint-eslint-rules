@@ -470,7 +470,7 @@ class IndentWalker extends Lint.RuleWalker {
     const parent = node.parent;
     if (parent['arguments'].length >= 2 && parent['arguments'][1] === node) {
       const firstArg = parent['arguments'][0];
-      return this.getLineAndCharacter(firstArg, true).line > this.getLineAndCharacter(firstArg).line;
+      return this.getLine(firstArg, true) > this.getLine(firstArg);
     }
 
     return false;
@@ -489,14 +489,14 @@ class IndentWalker extends Lint.RuleWalker {
       const calleeParent = calleeNode.parent;
 
       if (calleeNode.kind !== ts.SyntaxKind.FunctionExpression && calleeNode.kind !== ts.SyntaxKind.ArrowFunction) {
-        if (calleeParent && this.getLineAndCharacter(calleeParent).line < this.getLineAndCharacter(node).line) {
+        if (calleeParent && this.getLine(calleeParent) < this.getLine(node)) {
           indent = this.getNodeIndent(calleeParent).goodChar;
         }
       } else {
         const callee = calleeParent.expression;
         if (
           this.isArgBeforeCalleeNodeMultiline(calleeNode) &&
-          this.getLineAndCharacter(callee).line === this.getLineAndCharacter(callee, true).line &&
+          this.getLine(callee) === this.getLine(callee, true) &&
           !this.isNodeFirstInLine(calleeNode)
         ) {
           indent = this.getNodeIndent(calleeParent).goodChar;
@@ -549,7 +549,7 @@ class IndentWalker extends Lint.RuleWalker {
    */
   private expectedCaseIndent(node: ts.Node, switchIndent?: number) {
     const switchNode = (node.kind === ts.SyntaxKind.SwitchStatement) ? node : node.parent;
-    const line = this.getLineAndCharacter(switchNode).line;
+    const line = this.getLine(switchNode);
     let caseIndent;
 
     if (this.caseIndentStore[line]) {
@@ -635,16 +635,16 @@ class IndentWalker extends Lint.RuleWalker {
     });
 
     // Skip if first element is in same line with this node
-    if (elements.length && this.getLineAndCharacter(elements[0]).line === this.getLineAndCharacter(node).line) {
+    if (elements.length && this.getLine(elements[0]) === this.getLine(node)) {
       return;
     }
 
-    const nodeLine = this.getLineAndCharacter(node).line;
-    const nodeEndLine = this.getLineAndCharacter(node, true).line;
+    const nodeLine = this.getLine(node);
+    const nodeEndLine = this.getLine(node, true);
 
     // Skip if first element is in same line with this node
     if (elements.length) {
-      const firstElementLine = this.getLineAndCharacter(elements[0]).line;
+      const firstElementLine = this.getLine(elements[0]);
       if (nodeLine === firstElementLine) {
         return;
       }
@@ -668,10 +668,10 @@ class IndentWalker extends Lint.RuleWalker {
       }
 
       nodeIndent = this.getNodeIndent(effectiveParent).goodChar;
-      if (parentVarNode && this.getLineAndCharacter(parentVarNode).line !== nodeLine) {
+      if (parentVarNode && this.getLine(parentVarNode) !== nodeLine) {
         if (parent.kind !== ts.SyntaxKind.VariableDeclaration || parentVarNode === parentVarNode.parent.declarations[0]) {
-          const parentVarLine = this.getLineAndCharacter(parentVarNode).line;
-          const effectiveParentLine = this.getLineAndCharacter(effectiveParent).line;
+          const parentVarLine = this.getLine(parentVarNode);
+          const effectiveParentLine = this.getLine(effectiveParent);
           if (parent.kind === ts.SyntaxKind.VariableDeclaration && parentVarLine === effectiveParentLine) {
             varKind = parentVarNode.parent.getFirstToken().getText();
             nodeIndent = nodeIndent + (indentSize * OPTIONS.VariableDeclarator[varKind]);
@@ -716,7 +716,7 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodesIndent(elements, elementsIndent);
 
     if (elements.length > 0) {
-      const lastLine = this.getLineAndCharacter(elements[elements.length - 1], true).line;
+      const lastLine = this.getLine(elements[elements.length - 1], true);
       // Skip last block line check if last item in same line
       if (lastLine === nodeEndLine) {
         return;
@@ -747,8 +747,8 @@ class IndentWalker extends Lint.RuleWalker {
    * @returns {boolean} True if all the above condition satisfy
    */
   protected isNodeInVarOnTop(node: ts.Node, varNode) {
-    const nodeLine = this.getLineAndCharacter(node).line;
-    const parentLine = this.getLineAndCharacter(varNode.parent).line;
+    const nodeLine = this.getLine(node);
+    const parentLine = this.getLine(varNode.parent);
     return varNode &&
       parentLine === nodeLine &&
       varNode.parent.declarations.length > 1;
@@ -784,8 +784,8 @@ class IndentWalker extends Lint.RuleWalker {
   }
 
   protected visitIfStatement(node: ts.IfStatement) {
-    const thenLine = this.getLineAndCharacter(node.thenStatement).line;
-    const line = this.getLineAndCharacter(node).line;
+    const thenLine = this.getLine(node.thenStatement);
+    const line = this.getLine(node);
     if (node.thenStatement.kind !== ts.SyntaxKind.Block && thenLine > line) {
       this.blockIndentationCheck(node);
     }
