@@ -868,6 +868,9 @@ class IndentWalker extends Lint.RuleWalker {
 
     // VariableStatement -> VariableDeclarationList -> (VarKeyword, SyntaxList)
     const list = node.getChildAt(0).getChildAt(1);
+    if (!list) {
+      return;
+    }
     const len = list.getChildCount();
     const lastElement = list.getChildAt(len - 1);
     const lastToken = node.getLastToken();

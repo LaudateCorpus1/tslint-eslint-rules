@@ -31,6 +31,9 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
     {
+      code: 'export let upgradeModule = angular.module("ui.router.upgrade", ["ui.router"]);'
+    },
+    {
       code: Lint.Utils.dedent`
         bridge.callHandler(
           'getAppVersion', 'test23', function(responseData) {
