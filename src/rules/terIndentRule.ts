@@ -648,10 +648,9 @@ class IndentWalker extends Lint.RuleWalker {
 
     let elements = isKind(node, 'ObjectLiteralExpression') ? node['properties'] : node['elements'];
 
-    // filter out empty elements example would be [ , 2] so remove first element as espree considers it as null
+    // filter out empty elements, an example would be [ , 2]
     elements = elements.filter((elem) => {
-      console.log('checking:', elem !== null);
-      return elem !== null;
+      return elem.getText() !== '';
     });
 
     // Skip if first element is in same line with this node

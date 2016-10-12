@@ -31,6 +31,15 @@ const rule = 'ter-indent';
 const scripts: { valid: IScripts, invalid: IScripts } = {
   valid: [
     {
+      code: Lint.Utils.dedent`
+      const array = [
+          ,
+          'd',
+          3
+      ];
+      `
+    },
+    {
       code: 'export let upgradeModule = angular.module("ui.router.upgrade", ["ui.router"]);'
     },
     {
