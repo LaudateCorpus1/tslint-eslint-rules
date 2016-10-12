@@ -779,10 +779,29 @@ class IndentWalker extends Lint.RuleWalker {
    * Check and decide whether to check for indentation for blockless nodes
    * Scenarios are for or while statements without braces around them
    */
-  protected blockLessNodes(node) {
+  private blockLessNodes(node) {
     if (!isKind(node.statement, 'Block')) {
       this.blockIndentationCheck(node);
     }
+  }
+
+  /**
+   * Check indentation for variable declarations
+   */
+  private checkIndentInVariableDeclarations(node: ts.VariableDeclaration) {
+    const indent = this.expectedVarIndent(node);
+    this.checkNodeIndent(node, indent);
+  }
+
+  /**
+   * Check indentation for case and default clauses in switch statements.
+   */
+  private visitCase(node: ts.CaseClause | ts.DefaultClause) {
+    if (this.isSingleLineNode(node)) {
+      return;
+    }
+    const caseIndent = this.expectedCaseIndent(node);
+    this.checkNodesIndent(node.statements, caseIndent + indentSize);
   }
 
   protected visitClassDeclaration(node: ts.ClassDeclaration) {
@@ -827,24 +846,6 @@ class IndentWalker extends Lint.RuleWalker {
     this.checkNodesIndent(node.caseBlock.clauses, caseIndent);
     this.checkLastNodeLineIndent(node, switchIndent);
     super.visitSwitchStatement(node);
-  }
-
-  /**
-   * Check indentation for variable declarations
-   * @param {ASTNode} node node to examine
-   * @returns {void}
-   */
-  private checkIndentInVariableDeclarations(node: ts.VariableDeclaration) {
-    const indent = this.expectedVarIndent(node);
-    this.checkNodeIndent(node, indent);
-  }
-
-  private visitCase(node: ts.CaseClause | ts.DefaultClause) {
-    if (this.isSingleLineNode(node)) {
-      return;
-    }
-    const caseIndent = this.expectedCaseIndent(node);
-    this.checkNodesIndent(node.statements, caseIndent + indentSize);
   }
 
   protected visitCaseClause(node: ts.CaseClause) {
